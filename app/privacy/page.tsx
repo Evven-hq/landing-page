@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from 'next/image';
+import { AnimatedSection as Section, AnimatedToc } from "@/components/landing/AnimatedInfoPage";
 
 
 const sections = [
@@ -13,32 +14,6 @@ const sections = [
   { id: "changes", label: "Changes" },
   { id: "contact", label: "Contact" },
 ];
-
-function Section({
-  id,
-  title,
-  children,
-}: {
-  id?: string;
-  title?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section
-      id={id}
-      className="border-t border-border/30 py-12 first:border-none first:pt-0"
-    >
-      {title && (
-        <h2 className="mb-6 font-[family-name:var(--font-xanh-mono)]    text-2xl tracking-tight text-foreground">
-          {title}
-        </h2>
-      )}
-      <div className="space-y-4 text-[15px] leading-relaxed text-muted-foreground">
-        {children}
-      </div>
-    </section>
-  );
-}
 
 function Item({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -96,23 +71,13 @@ export default function PrivacyPage() {
               <p className="mb-3 text-[10px] uppercase tracking-[0.25em] text-muted-foreground/50">
                 On this page
               </p>
-              <div className="space-y-0.5">
-                {sections.map((s) => (
-                  <a
-                    key={s.id}
-                    href={`#${s.id}`}
-                    className="block rounded px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground"
-                  >
-                    {s.label}
-                  </a>
-                ))}
-              </div>
+              <AnimatedToc sections={sections} />
             </nav>
           </aside>
 
           {/* Content */}
           <div>
-            <Section id="what-we-collect" title="What We Collect">
+            <Section id="what-we-collect" title="What We Collect" borderClassName="border-border/30">
               <p>We collect only what&apos;s needed to run the service.</p>
               <div className="card mt-2 space-y-3 rounded-lg p-5">
                 <Item label="Account data">
@@ -139,7 +104,7 @@ export default function PrivacyPage() {
               </p>
             </Section>
 
-            <Section id="how-we-use-it" title="How We Use It">
+            <Section id="how-we-use-it" title="How We Use It" borderClassName="border-border/30">
               <p>Your data is used to:</p>
               <ul className="mt-1 space-y-2 text-sm">
                 {[
@@ -161,7 +126,7 @@ export default function PrivacyPage() {
               </p>
             </Section>
 
-            <Section id="third-party-services" title="Third-Party Services">
+            <Section id="third-party-services" title="Third-Party Services" borderClassName="border-border/30">
               <p>
                 We rely on a small set of trusted infrastructure providers to
                 operate the platform:
@@ -179,7 +144,7 @@ export default function PrivacyPage() {
               </p>
             </Section>
 
-            <Section id="data-retention" title="Data Retention">
+            <Section id="data-retention" title="Data Retention" borderClassName="border-border/30">
               <p>
                 Your data is retained for as long as your account is active.
                 If you delete your account, we will delete your personal data
@@ -189,7 +154,7 @@ export default function PrivacyPage() {
               </p>
             </Section>
 
-            <Section id="security" title="Security">
+            <Section id="security" title="Security" borderClassName="border-border/30">
               <p>
                 Passwords are hashed and never stored in plaintext. All data
                 in transit is encrypted via TLS. Access to production systems
@@ -206,7 +171,7 @@ export default function PrivacyPage() {
               </p>
             </Section>
 
-            <Section id="your-rights" title="Your Rights">
+            <Section id="your-rights" title="Your Rights" borderClassName="border-border/30">
               <p>You have the right to:</p>
               <div className="card mt-2 space-y-3 rounded-lg p-5">
                 <Item label="Access">Request a copy of your personal data.</Item>
@@ -227,7 +192,7 @@ export default function PrivacyPage() {
               </p>
             </Section>
 
-            <Section id="childrens-privacy" title="Children's Privacy">
+            <Section id="childrens-privacy" title="Children's Privacy" borderClassName="border-border/30">
               <p>
                 EvenUp is not intended for users under 13. We do not knowingly
                 collect data from children. If you believe a child has created
@@ -235,7 +200,7 @@ export default function PrivacyPage() {
               </p>
             </Section>
 
-            <Section id="changes" title="Changes to This Policy">
+            <Section id="changes" title="Changes to This Policy" borderClassName="border-border/30">
               <p>
                 If we make material changes, we will notify you via email and
                 update the date above at least{" "}
@@ -245,7 +210,7 @@ export default function PrivacyPage() {
               </p>
             </Section>
 
-            <Section id="contact" title="Contact">
+            <Section id="contact" title="Contact" borderClassName="border-border/30">
               <p>Questions, concerns, or requests — we&apos;re at:</p>
               <a
                 href="mailto:hello@evven.xyz"

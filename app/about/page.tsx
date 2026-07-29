@@ -1,5 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
+import {
+  AnimatedSection as Section,
+  AnimatedStat as Stat,
+  AnimatedToc,
+} from "@/components/landing/AnimatedInfoPage";
 
 const sections = [
   { id: "mission", label: "Mission" },
@@ -10,32 +15,6 @@ const sections = [
   { id: "contact", label: "Contact" },
 ];
 
-function Section({
-  id,
-  title,
-  children,
-}: {
-  id?: string;
-  title?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section
-      id={id}
-      className="border-t border-border py-12 first:border-none first:pt-0"
-    >
-      {title && (
-        <h2 className="mb-6 font-[family-name:var(--font-xanh-mono)] text-2xl tracking-tight text-foreground">
-          {title}
-        </h2>
-      )}
-      <div className="space-y-4 text-[15px] leading-relaxed text-muted-foreground">
-        {children}
-      </div>
-    </section>
-  );
-}
-
 function Item({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-3">
@@ -43,17 +22,6 @@ function Item({ label, children }: { label: string; children: React.ReactNode })
         {label}
       </span>
       <span className="text-sm text-muted-foreground">{children}</span>
-    </div>
-  );
-}
-
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="space-y-1">
-      <p className="font-[family-name:var(--font-xanh-mono)] text-4xl font-bold tracking-tight text-foreground">
-        {value}
-      </p>
-      <p className="text-sm text-muted-foreground">{label}</p>
     </div>
   );
 }
@@ -91,30 +59,20 @@ export default function AboutPage() {
           {/* Stats row */}
           <div className="mt-12 grid grid-cols-2 gap-8 sm:grid-cols-3">
             <Stat value="2025" label="Year founded" />
-            <Stat value="4" label="People building it" />
-            <Stat value="$0" label="Raised (bootstrapped)" />
+            <Stat value="Remote" label="How we work" />
+            <Stat value="Private" label="Funding" />
           </div>
         </div>
 
         {/* Two-column layout */}
         <div className="lg:grid lg:grid-cols-[200px_1fr] lg:gap-16 xl:gap-24">
-          {/* Sticky ToC */}
+          {/* Sticky ToC with sliding active indicator */}
           <aside className="hidden lg:block">
             <nav className="sticky top-24">
               <p className="mb-3 text-[10px] uppercase tracking-[0.25em] text-muted-foreground/50">
                 On this page
               </p>
-              <div className="space-y-0.5">
-                {sections.map((s) => (
-                  <a
-                    key={s.id}
-                    href={`#${s.id}`}
-                    className="block rounded px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground"
-                  >
-                    {s.label}
-                  </a>
-                ))}
-              </div>
+              <AnimatedToc sections={sections} />
             </nav>
           </aside>
 
@@ -205,45 +163,43 @@ export default function AboutPage() {
             </Section>
 
             <Section id="team" title="Team">
-                <p>
-                    Evven is a tiny team. We&apos;re builders who got frustrated
-                    with the tools that existed and decided to make something
-                    better.
-                </p>
+              <p>
+                Evven is built by a small group of engineers who met as
+                students and decided to build the tool they wished existed
+                instead of waiting for someone else to make it.
+              </p>
 
-                <div className="card mt-2 space-y-3 rounded-lg p-5">
-                    <Item label="Jagdeep Singh">
-                        Founder & Founding Engineer. Building the product and keeping the
-                        lights on.
-                    </Item>
+              <div className="card mt-2 space-y-3 rounded-lg p-5">
+                <Item label="Founding team">
+                  A close-knit group of founding engineers, still early in
+                  their careers, each focused on a different corner of the
+                  product.
+                </Item>
 
-                    <Item label="Krishna Gupta">
-                        Founding Engineer. Helping build and scale Evven from the
-                        ground up.
-                    </Item>
+                <Item label="Backing">
+                  We&apos;re quietly backed by someone who believed in the
+                  idea early on — which lets us build deliberately instead
+                  of chasing growth metrics.
+                </Item>
 
-                    <Item label="Rohit Singh Rajput">
-                        Founding Engineer. Contributing to product development and
-                        core platform features.
-                    </Item>
+                <Item label="How we work">
+                  No office, no hierarchy, no rigid roadmap. Just a small
+                  team that ships fast, sweats the UI details, and uses the
+                  product every day themselves.
+                </Item>
 
-                    <Item label="Keshav Gupta">
-                        Founding Engineer. Focused on engineering, infrastructure,
-                        and reliability.
-                    </Item>
+                <Item label="Open roles">
+                  We&apos;re a small team and not currently hiring, but if
+                  you&apos;re passionate about what we&apos;re building,
+                  reach out anyway.
+                </Item>
+              </div>
 
-                    <Item label="Open roles">
-                    We&apos;re a small team and not currently hiring, but if
-                    you&apos;re passionate about what we&apos;re building, reach
-                    out anyway.
-                    </Item>
-                </div>
-
-                <p className="text-sm">
-                    We&apos;re based wherever we have a good internet connection.
-                    Evven is a remote-first, async-first team.
-                </p>
-                </Section>
+              <p className="text-sm">
+                We&apos;re based wherever we have a good internet connection.
+                Evven is a remote-first, async-first team.
+              </p>
+            </Section>
 
             <Section id="contact" title="Contact">
               <p>

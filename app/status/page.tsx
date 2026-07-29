@@ -1,5 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
+import {
+  AnimatedSection as Section,
+  AnimatedStat,
+  AnimatedToc,
+} from "@/components/landing/AnimatedInfoPage";
 
 const sections = [
   { id: "overview", label: "Overview" },
@@ -8,32 +13,6 @@ const sections = [
   { id: "uptime", label: "Uptime" },
   { id: "subscribe", label: "Stay Informed" },
 ];
-
-function Section({
-  id,
-  title,
-  children,
-}: {
-  id?: string;
-  title?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section
-      id={id}
-      className="border-t border-border py-12 first:border-none first:pt-0"
-    >
-      {title && (
-        <h2 className="mb-6 font-[family-name:var(--font-xanh-mono)] text-2xl tracking-tight text-foreground">
-          {title}
-        </h2>
-      )}
-      <div className="space-y-4 text-[15px] leading-relaxed text-muted-foreground">
-        {children}
-      </div>
-    </section>
-  );
-}
 
 function StatusRow({
   name,
@@ -104,17 +83,7 @@ export default function StatusPage() {
               <p className="mb-3 text-[10px] uppercase tracking-[0.25em] text-muted-foreground/50">
                 On this page
               </p>
-              <div className="space-y-0.5">
-                {sections.map((s) => (
-                  <a
-                    key={s.id}
-                    href={`#${s.id}`}
-                    className="block rounded px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground"
-                  >
-                    {s.label}
-                  </a>
-                ))}
-              </div>
+              <AnimatedToc sections={sections} />
             </nav>
           </aside>
 
@@ -163,24 +132,9 @@ export default function StatusPage() {
 
             <Section id="uptime" title="Uptime">
               <div className="grid gap-6 sm:grid-cols-3">
-                <div className="space-y-1">
-                  <p className="font-[family-name:var(--font-xanh-mono)] text-4xl font-bold tracking-tight text-foreground">
-                    99.9%
-                  </p>
-                  <p className="text-sm text-muted-foreground">Last 30 days</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="font-[family-name:var(--font-xanh-mono)] text-4xl font-bold tracking-tight text-foreground">
-                    99.9%
-                  </p>
-                  <p className="text-sm text-muted-foreground">Last 90 days</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="font-[family-name:var(--font-xanh-mono)] text-4xl font-bold tracking-tight text-foreground">
-                    99.8%
-                  </p>
-                  <p className="text-sm text-muted-foreground">Last 12 months</p>
-                </div>
+                <AnimatedStat value="99.9%" label="Last 30 days" />
+                <AnimatedStat value="99.9%" label="Last 90 days" />
+                <AnimatedStat value="99.8%" label="Last 12 months" />
               </div>
             </Section>
 

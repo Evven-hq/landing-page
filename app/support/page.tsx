@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { AnimatedSection as Section, AnimatedToc } from "@/components/landing/AnimatedInfoPage";
 
 const sections = [
   { id: "getting-started", label: "Getting Started" },
@@ -9,32 +10,6 @@ const sections = [
   { id: "troubleshooting", label: "Troubleshooting" },
   { id: "contact", label: "Contact Support" },
 ];
-
-function Section({
-  id,
-  title,
-  children,
-}: {
-  id?: string;
-  title?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section
-      id={id}
-      className="border-t border-border py-12 first:border-none first:pt-0"
-    >
-      {title && (
-        <h2 className="mb-6 font-[family-name:var(--font-xanh-mono)] text-2xl tracking-tight text-foreground">
-          {title}
-        </h2>
-      )}
-      <div className="space-y-4 text-[15px] leading-relaxed text-muted-foreground">
-        {children}
-      </div>
-    </section>
-  );
-}
 
 function QA({ q, children }: { q: string; children: React.ReactNode }) {
   return (
@@ -84,17 +59,7 @@ export default function SupportPage() {
               <p className="mb-3 text-[10px] uppercase tracking-[0.25em] text-muted-foreground/50">
                 On this page
               </p>
-              <div className="space-y-0.5">
-                {sections.map((s) => (
-                  <a
-                    key={s.id}
-                    href={`#${s.id}`}
-                    className="block rounded px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground"
-                  >
-                    {s.label}
-                  </a>
-                ))}
-              </div>
+              <AnimatedToc sections={sections} />
             </nav>
           </aside>
 
