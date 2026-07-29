@@ -1,0 +1,229 @@
+@import "tailwindcss";
+
+:root {
+  --evven-background: #faf8f5;
+  --evven-surface: #f5f3f0;
+  --evven-border: #c4bfb7;
+  --evven-card-background: #fefefe;
+
+  --evven-text-primary: #1a1816;
+  --evven-text-muted: #8b8480;
+  --evven-text-inverse: #ffffff;
+
+  --evven-accent-primary: #2d5a4f;
+  --evven-accent-secondary: #e8dcc8;
+  --evven-error: #c0392b;
+
+  /* Radius */
+
+  --evven-radius-card: 16px;
+  --evven-radius-hero: 20px;
+
+  /* Fonts */
+
+  --font-satoshi: "Satoshi", sans-serif;
+  --font-heading: "Xanh Mono", monospace;
+  --font-mono: "JetBrains Mono", monospace;
+}
+.handwritten {
+  font-family: var(--font-homemade-apple);
+}
+/* .dark {
+  --evven-background: #2c2924;
+  --evven-surface: #262424;
+  --evven-border: #332c2c;
+
+  --evven-text-primary: #ffffff;
+  --evven-text-muted: #888888;
+  --evven-text-inverse: #f1efe9;
+
+  --evven-accent-hero: #ffffff;
+  --evven-error: #e57373;
+  --evven-accent-slate: #9ca3af;
+} */
+
+@theme inline {
+  --color-background: var(--evven-background);
+  --color-foreground: var(--evven-text-primary);
+
+  --color-border: var(--evven-border);
+  --color-input: var(--evven-border);
+  --color-ring: var(--evven-accent-primary);
+
+  --color-primary: var(--evven-accent-primary);
+  --color-primary-foreground: var(--evven-text-inverse);
+
+  --color-secondary: var(--evven-surface);
+  --color-secondary-foreground: var(--evven-text-primary);
+
+  --color-muted: var(--evven-surface);
+  --color-muted-foreground: var(--evven-text-muted);
+
+  --color-destructive: var(--evven-error);
+
+  --font-sans: "Satoshi", sans-serif;
+  --font-heading: "Xanh Mono", monospace;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-hero-heading : "Baskervville", latin;
+}
+
+::selection {
+  background: var(--evven-text-primary);
+  color: var(--evven-background);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html,
+  body {
+    width: 100%;
+    min-height: 100%;
+    background: var(--evven-background);
+    color: var(--evven-text-primary);
+    font-family: var(--font-satoshi);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  input,
+  textarea {
+    outline: none;
+    background: transparent;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--evven-accent-primary) 55%, transparent) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+    background-color: color-mix(in srgb, var(--evven-accent-primary) 58%, var(--evven-border));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--evven-text-primary) 8%, transparent);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, var(--evven-accent-primary) 78%, var(--evven-text-primary));
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+/* Typography */
+
+.font-heading {
+  font-family: var(--font-heading);
+  font-weight: 400;
+}
+
+.hero-main-text {
+  font-family: var(--font-hero-heading);
+  font-style: italic;
+  letter-spacing: -0.05em;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+/* Utility Classes */
+
+.text-muted {
+  color: var(--evven-text-muted);
+}
+
+.surface {
+  background: var(--evven-surface);
+  border: 0.5px solid var(--evven-border);
+}
+
+.card {
+  background: var(--evven-card-background);
+  border: 1px solid var(--evven-border);
+}
+
+.hero-surface {
+  background: var(--evven-accent-primary);
+  color: var(--evven-text-inverse);
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--evven-text-muted);
+}
+
+
+
+/* Teams theme — navy / dark blue */
+.theme-teams {
+  --evven-accent-primary: #1e3a5f;
+  --evven-accent-secondary: #d6e2ef;
+  --evven-background: #f6f8fa;
+  --evven-surface: #eef2f6;
+  --evven-border: #dce4ec;
+}
+
+/* Enterprise theme — deep maroon/burgundy */
+.theme-enterprise {
+  --evven-accent-primary: #6e1f2e;
+  --evven-accent-secondary: #f1dde1;
+  --evven-background: #faf6f6;
+  --evven-surface: #f6ebec;
+  --evven-border: #e9d6d9;
+}
+::selection {
+  background-color: #2d5a4f; 
+  color: #f9f7f4;            
+}
+/* Teams */
+.theme-teams ::selection {
+  background: #0f3f75;
+  color: #f9f7f4;
+}
+
+/* Enterprise */
+.theme-enterprise ::selection {
+  background: #6e1f2e;
+  color: #f9f7f4;
+}
