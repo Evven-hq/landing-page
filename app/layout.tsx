@@ -115,6 +115,8 @@ export const metadata: Metadata = {
   },
 };
 
+console.log("Welcome to Evven! \n\n and thank you for checking out our code. If you have any questions or feedback, feel free to reach out to us at contact@evven.xyz");
+
 export default function RootLayout({
   children,
 }: Readonly<{
