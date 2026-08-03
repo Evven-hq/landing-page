@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from 'next/image';
+import InfoFooter from "@/components/InfoFooter";
 import { AnimatedSection as Section, AnimatedToc } from "@/components/landing/AnimatedInfoPage";
 
 
@@ -222,6 +223,7 @@ export default function PrivacyPage() {
           </div>
         </div>
       </div>
+      <InfoFooter />
     </main>
   );
 }

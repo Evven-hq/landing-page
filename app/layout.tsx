@@ -72,20 +72,16 @@ export const metadata: Metadata = {
 
   icons: {
     icon: [
-      {
-        url: "/Evven-black.svg",
-        type: "image/svg+xml",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/Evven-white.svg",
-        type: "image/svg+xml",
-        media: "(prefers-color-scheme: dark)",
-      },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/Evven-black.svg", type: "image/svg+xml", media: "(prefers-color-scheme: light)" },
+      { url: "/Evven-white.svg", type: "image/svg+xml", media: "(prefers-color-scheme: dark)" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
     ],
-    shortcut: "/Evven-black.svg",
-    apple: "/Evven-black.svg",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
+
 
   openGraph: {
     title: 'Evven: Split bills. Not friendships.',

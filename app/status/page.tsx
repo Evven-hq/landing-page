@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import InfoFooter from "@/components/InfoFooter";
 import {
   AnimatedSection as Section,
   AnimatedStat,
@@ -154,6 +155,7 @@ export default function StatusPage() {
           </div>
         </div>
       </div>
+      <InfoFooter />
     </main>
   );
 }
