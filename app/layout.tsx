@@ -48,7 +48,7 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   title: {
     template: '%s | Evven',
-    default: 'Evven: Split Bills & Track Group Expenses Automatically',
+    default: 'Evven',
   },
   description: 'Stop doing math in group chats. Evven automatically splits bills, tracks shared expenses, and settles balances instantly for roommates, trips, and teams. Free to start.',
   keywords: [
