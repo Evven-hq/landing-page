@@ -67,8 +67,8 @@ uniform vec3 uColor2;
 uniform vec3 uColor3;
 out vec4 fragColor;
 #define S(a,b,t) smoothstep(a,b,t)
-mat2 Rot(float a){float s=sin(a),c=cos(a);return mat2(c,-s,s,c);} 
-vec2 hash(vec2 p){p=vec2(dot(p,vec2(2127.1,81.17)),dot(p,vec2(1269.5,283.37)));return fract(sin(p)*43758.5453);} 
+mat2 Rot(float a){float s=sin(a),c=cos(a);return mat2(c,-s,s,c);}
+vec2 hash(vec2 p){p=vec2(dot(p,vec2(2127.1,81.17)),dot(p,vec2(1269.5,283.37)));return fract(sin(p)*43758.5453);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);float n=mix(mix(dot(-1.0+2.0*hash(i+vec2(0.0,0.0)),f-vec2(0.0,0.0)),dot(-1.0+2.0*hash(i+vec2(1.0,0.0)),f-vec2(1.0,0.0)),u.x),mix(dot(-1.0+2.0*hash(i+vec2(0.0,1.0)),f-vec2(0.0,1.0)),dot(-1.0+2.0*hash(i+vec2(1.0,1.0)),f-vec2(1.0,1.0)),u.x),u.y);return 0.5+0.5*n;}
 void mainImage(out vec4 o, vec2 C){
   float t=iTime*uTimeSpeed;
@@ -105,7 +105,7 @@ void mainImage(out vec4 o, vec2 C){
   vec3 col=mix(layer1,layer2,S(v0,v1,tuv.y));
 
   vec2 grainUv=uv*max(uGrainScale,0.001);
-  if(uGrainAnimated>0.5){grainUv+=vec2(iTime*0.05);} 
+  if(uGrainAnimated>0.5){grainUv+=vec2(iTime*0.05);}
   float grain=fract(sin(dot(grainUv,vec2(12.9898,78.233)))*43758.5453);
   col+=(grain-0.5)*uGrainAmount;
 
@@ -123,7 +123,6 @@ void main(){
   fragColor=o;
 }
 `;
-
 
 // Keep renderer/program alive across re-renders so Effect 2 can update
 // uniforms without ever rebuilding the WebGL context.
@@ -185,29 +184,29 @@ const Grainient: React.FC<GrainientProps> = ({
       vertex,
       fragment,
       uniforms: {
-        iTime:           { value: 0 },
-        iResolution:     { value: new Float32Array([1, 1]) },
-        uTimeSpeed:      { value: 0.25 },
-        uColorBalance:   { value: 0.0 },
-        uWarpStrength:   { value: 1.0 },
-        uWarpFrequency:  { value: 5.0 },
-        uWarpSpeed:      { value: 2.0 },
-        uWarpAmplitude:  { value: 50.0 },
-        uBlendAngle:     { value: 0.0 },
-        uBlendSoftness:  { value: 0.05 },
+        iTime: { value: 0 },
+        iResolution: { value: new Float32Array([1, 1]) },
+        uTimeSpeed: { value: 0.25 },
+        uColorBalance: { value: 0.0 },
+        uWarpStrength: { value: 1.0 },
+        uWarpFrequency: { value: 5.0 },
+        uWarpSpeed: { value: 2.0 },
+        uWarpAmplitude: { value: 50.0 },
+        uBlendAngle: { value: 0.0 },
+        uBlendSoftness: { value: 0.05 },
         uRotationAmount: { value: 500.0 },
-        uNoiseScale:     { value: 2.0 },
-        uGrainAmount:    { value: 0.1 },
-        uGrainScale:     { value: 2.0 },
-        uGrainAnimated:  { value: 0.0 },
-        uContrast:       { value: 1.5 },
-        uGamma:          { value: 1.0 },
-        uSaturation:     { value: 1.0 },
-        uCenterOffset:   { value: new Float32Array([0, 0]) },
-        uZoom:           { value: 0.9 },
-        uColor1:         { value: new Float32Array([1, 1, 1]) },
-        uColor2:         { value: new Float32Array([1, 1, 1]) },
-        uColor3:         { value: new Float32Array([1, 1, 1]) }
+        uNoiseScale: { value: 2.0 },
+        uGrainAmount: { value: 0.1 },
+        uGrainScale: { value: 2.0 },
+        uGrainAnimated: { value: 0.0 },
+        uContrast: { value: 1.5 },
+        uGamma: { value: 1.0 },
+        uSaturation: { value: 1.0 },
+        uCenterOffset: { value: new Float32Array([0, 0]) },
+        uZoom: { value: 0.9 },
+        uColor1: { value: new Float32Array([1, 1, 1]) },
+        uColor2: { value: new Float32Array([1, 1, 1]) },
+        uColor3: { value: new Float32Array([1, 1, 1]) }
       }
     });
 
@@ -244,7 +243,7 @@ const Grainient: React.FC<GrainientProps> = ({
       if (isVisible && isPageVisible && raf === 0) raf = requestAnimationFrame(loop);
     };
     const tryStop = () => {
-      if (raf !== 0) { cancelAnimationFrame(raf); raf = 0; }
+      if (raf !== 0) { cancelAnimationFrame(raf); raf = 0; };
     };
 
     const io = new IntersectionObserver(
@@ -278,36 +277,35 @@ const Grainient: React.FC<GrainientProps> = ({
     const ctx = ctxMap.get(container);
     if (!ctx) return;
     const { program } = ctx;
-    const u = program.uniforms as Record<string, { value: any }>;
+    const u = program.uniforms as Record<string, { value: number | Float32Array }>;
 
-    u.uTimeSpeed.value      = timeSpeed;
-    u.uColorBalance.value   = colorBalance;
-    u.uWarpStrength.value   = warpStrength;
-    u.uWarpFrequency.value  = warpFrequency;
-    u.uWarpSpeed.value      = warpSpeed;
-    u.uWarpAmplitude.value  = warpAmplitude;
-    u.uBlendAngle.value     = blendAngle;
-    u.uBlendSoftness.value  = blendSoftness;
+    u.uTimeSpeed.value = timeSpeed;
+    u.uColorBalance.value = colorBalance;
+    u.uWarpStrength.value = warpStrength;
+    u.uWarpFrequency.value = warpFrequency;
+    u.uWarpSpeed.value = warpSpeed;
+    u.uWarpAmplitude.value = warpAmplitude;
+    u.uBlendAngle.value = blendAngle;
+    u.uBlendSoftness.value = blendSoftness;
     u.uRotationAmount.value = rotationAmount;
-    u.uNoiseScale.value     = noiseScale;
-    u.uGrainAmount.value    = grainAmount;
-    u.uGrainScale.value     = grainScale;
-    u.uGrainAnimated.value  = grainAnimated ? 1.0 : 0.0;
-    u.uContrast.value       = contrast;
-    u.uGamma.value          = gamma;
-    u.uSaturation.value     = saturation;
-    u.uCenterOffset.value   = new Float32Array([centerX, centerY]);
-    u.uZoom.value           = zoom;
-    u.uColor1.value         = new Float32Array(hexToRgb(color1));
-    u.uColor2.value         = new Float32Array(hexToRgb(color2));
-    u.uColor3.value         = new Float32Array(hexToRgb(color3));
+    u.uNoiseScale.value = noiseScale;
+    u.uGrainAmount.value = grainAmount;
+    u.uGrainScale.value = grainScale;
+    u.uGrainAnimated.value = grainAnimated ? 1.0 : 0.0;
+    u.uContrast.value = contrast;
+    u.uGamma.value = gamma;
+    u.uSaturation.value = saturation;
+    u.uCenterOffset.value = new Float32Array([centerX, centerY]);
+    u.uZoom.value = zoom;
+    u.uColor1.value = new Float32Array(hexToRgb(color1));
+    u.uColor2.value = new Float32Array(hexToRgb(color2));
+    u.uColor3.value = new Float32Array(hexToRgb(color3));
   }, [
     timeSpeed, colorBalance, warpStrength, warpFrequency, warpSpeed,
     warpAmplitude, blendAngle, blendSoftness, rotationAmount, noiseScale,
     grainAmount, grainScale, grainAnimated, contrast, gamma, saturation,
     centerX, centerY, zoom, color1, color2, color3
   ]);
-
 
   return <div ref={containerRef} className={`relative h-full w-full overflow-hidden ${className}`.trim()} />;
 };

@@ -34,8 +34,8 @@ export default function PrivacyPage() {
       >
         <Link href="/" className="transition-opacity hover:opacity-80">
           <Image
-              src="/EvenUp-black.svg"
-              alt="EvenUp"
+              src="/Evven-black.svg"
+              alt="Evven"
               width={70}
               height={70}
               className="w-12 h-12 sm:w-14 sm:h-14 md:w-[70px] md:h-[70px]"
@@ -53,7 +53,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-            EvenUp is built on the belief that your data belongs to you. This
+            Evven is built on the belief that your data belongs to you. This
             policy explains exactly what we collect, why we collect it, and
             what control you have over it.
           </p>
@@ -112,7 +112,7 @@ export default function PrivacyPage() {
                   "Power core features — event creation, discovery, and collaboration.",
                   "Send transactional emails: account verification, password resets, event notifications.",
                   "Detect and prevent abuse, fraud, and security incidents.",
-                  "Understand how people use EvenUp so we can make it better.",
+                  "Understand how people use Evven so we can make it better.",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2">
                     <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" />
@@ -122,7 +122,7 @@ export default function PrivacyPage() {
               </ul>
               <p className="card rounded-lg p-4 text-sm">
                 We do not use your data to train ML models or sell it to
-                advertisers. There are no ads on EvenUp.
+                advertisers. There are no ads on Evven.
               </p>
             </Section>
 
@@ -194,7 +194,7 @@ export default function PrivacyPage() {
 
             <Section id="childrens-privacy" title="Children's Privacy" borderClassName="border-border/30">
               <p>
-                EvenUp is not intended for users under 13. We do not knowingly
+                Evven is not intended for users under 13. We do not knowingly
                 collect data from children. If you believe a child has created
                 an account, contact us and we will delete it promptly.
               </p>

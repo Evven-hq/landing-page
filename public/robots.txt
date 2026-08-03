@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://evven.xyz
+
+# Sitemaps
+Sitemap: https://evven.xyz/sitemap.xml

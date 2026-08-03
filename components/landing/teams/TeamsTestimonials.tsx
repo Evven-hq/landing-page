@@ -3,7 +3,7 @@
 const testimonials = [
   {
     quote:
-      "Our team used to argue about who covered the last client lunch. Now everyone can see exactly where things stand.",
+      'Our team used to argue about who covered the last client lunch. Now everyone can see exactly where things stand.',
     name: "Priya N.",
     role: "Operations Lead",
   },
@@ -33,7 +33,7 @@ export function TeamsTestimonials() {
               className="space-y-6 pb-12 border-b border-[var(--evven-border)]"
             >
               <p className="text-lg sm:text-xl leading-relaxed text-[var(--evven-text-primary)]">
-                "{testimonial.quote}"
+                {testimonial.quote}
               </p>
               <footer className="space-y-1">
                 <strong className="block text-base font-semibold text-[var(--evven-text-primary)]">

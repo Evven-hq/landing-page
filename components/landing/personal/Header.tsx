@@ -63,8 +63,8 @@ export default function Header() {
       >
         <Link href="/" className="pointer-events-auto">
           <Image
-            src="/EvenUp-white.svg"
-            alt="EvenUp"
+            src="/Evven-white.svg"
+            alt="Evven"
             width={70}
             height={70}
             className="w-12 h-12 sm:w-14 sm:h-14 md:w-[70px] md:h-[70px]"

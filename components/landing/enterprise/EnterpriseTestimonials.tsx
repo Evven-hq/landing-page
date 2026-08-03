@@ -1,45 +1,51 @@
-"use client";
+import Image from "next/image";
 
 const testimonials = [
   {
     quote:
-      "Rolling out Evven across our offices gave finance a single source of truth for shared expenses for the first time.",
+      'Rolling out Evven across our offices gave finance a single source of truth for shared expenses for the first time.',
     name: "Daniela K.",
     role: "VP of Finance",
   },
   {
     quote:
-      "The approval workflows and audit logs made our quarterly review process dramatically faster and easier.",
+      'The approval workflows and audit logs made our quarterly review process dramatically faster and easier.',
     name: "Owen R.",
     role: "IT Director",
   },
 ];
 
-export function EnterpriseTestimonials() {
+export default function EnterpriseTestimonials() {
   return (
-    <section className="section-animate bg-white px-6 py-24 sm:py-32">
-      <div className="mx-auto max-w-5xl">
-        <div className="space-y-6 mb-16">
-          <p className="section-label">Testimonials</p>
-          <h2 className="text-5xl sm:text-6xl font-heading tracking-tight">
-            Trusted by finance and IT leaders.
-          </h2>
-        </div>
-
-        <div className="grid gap-12 lg:grid-cols-2">
+    <section className="pt-20 pb-24">
+      <div className="mx-auto max-w-5xl px-6">
+        <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+          Trusted by leading companies
+        </p>
+        <h2 className="mt-4 font-bold text-3xl tracking-tight md:text-4xl">
+          Trusted by industry leaders
+        </h2>
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((testimonial) => (
             <blockquote
               key={testimonial.name}
-              className="space-y-6 pb-12 border-b border-[var(--evven-border)]"
+              className="rounded-lg border p-6"
             >
-              <p className="text-lg sm:text-xl leading-relaxed text-[var(--evven-text-primary)]">
-                "{testimonial.quote}"
-              </p>
-              <footer className="space-y-1">
-                <strong className="block text-base font-semibold text-[var(--evven-text-primary)]">
-                  {testimonial.name}
-                </strong>
-                <p className="text-sm text-[var(--evven-text-muted)]">{testimonial.role}</p>
+              <p className="text-sm">{testimonial.quote}</p>
+              <footer className="mt-4 flex items-baseline gap-3">
+                <Image
+                  src="/Evven-black.svg"
+                  alt="Evven"
+                  width={24}
+                  height={24}
+                  className="shrink-0"
+                />
+                <div>
+                  <p className="font-medium">{testimonial.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {testimonial.role}
+                  </p>
+                </div>
               </footer>
             </blockquote>
           ))}

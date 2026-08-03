@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import { JetBrains_Mono, Xanh_Mono, Homemade_Apple, Baskervville, Crimson_Text, Instrument_Serif } from "next/font/google";
+import OrganizationSchema from "@/components/SchemaOrg";
 
 const jetBrains = JetBrains_Mono({
   subsets: ['latin'],
@@ -45,11 +46,76 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Evven",
-  description: "Keep shared costs fair, clear, and totally handled. Evven makes group expense tracking simple and automated.",
+  title: {
+    template: '%s | Evven',
+    default: 'Evven: Split Bills & Track Group Expenses Automatically',
+  },
+  description: 'Stop doing math in group chats. Evven automatically splits bills, tracks shared expenses, and settles balances instantly for roommates, trips, and teams. Free to start.',
+  keywords: [
+    'expense splitter',
+    'bill splitter app',
+    'group expense tracker',
+    'roommate bill splitter',
+    'shared expenses app',
+    'trip expense splitter',
+    'Evven',
+    'expense management',
+    'bill sharing',
+    'group payments'
+  ],
+  authors: [{ name: 'Evven Team' }],
+  creator: 'Evven',
+  publisher: 'Evven',
+  formatDetection: {
+    telephone: false,
+  },
 
   icons: {
-    icon: "/EvenUp-white.svg",
+    icon: [
+      {
+        url: "/Evven-black.svg",
+        type: "image/svg+xml",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/Evven-white.svg",
+        type: "image/svg+xml",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+    shortcut: "/Evven-black.svg",
+    apple: "/Evven-black.svg",
+  },
+
+  openGraph: {
+    title: 'Evven: Split bills. Not friendships.',
+    description: 'Keep shared costs fair, clear, and totally handled. Evven makes group expense tracking simple and automated.',
+    url: 'https://evven.xyz',
+    siteName: 'Evven',
+    images: [
+      {
+        url: 'https://evven.xyz/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Evven - Split expenses. Stay even.',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Evven: Split bills. Not friendships.',
+    description: 'Keep shared costs fair, clear, and totally handled.',
+    images: ['https://evven.xyz/og-image.jpg'],
+    creator: '@EvvenHQ',
+  },
+
+  alternates: {
+    canonical: 'https://evven.xyz',
+    languages: {
+      'en-US': 'https://evven.xyz',
+    },
   },
 };
 
@@ -73,6 +139,7 @@ export default function RootLayout({
           href="https://api.fontshare.com/v2/css?f[]=dancing-script@400,700&display=swap" 
           rel="stylesheet"
         />
+        <OrganizationSchema />
       </head>
       <body className="min-h-full flex flex-col">
         {children}

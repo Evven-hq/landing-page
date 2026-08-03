@@ -5,7 +5,7 @@ import { EnterpriseHero } from "@/components/landing/enterprise/EnterpriseHero";
 import { EnterpriseFeatures } from "@/components/landing/enterprise/EnterpriseFeatures";
 import { EnterpriseHowItWorks } from "@/components/landing/enterprise/EnterpriseHowItWorks";
 import { EnterpriseUseCases } from "@/components/landing/enterprise/EnterpriseUseCases";
-import { EnterpriseTestimonials } from "@/components/landing/enterprise/EnterpriseTestimonials";
+import EnterpriseTestimonials from "@/components/landing/enterprise/EnterpriseTestimonials";
 import { EnterprisePricing } from "@/components/landing/enterprise/EnterprisePricing";
 import { EnterpriseFAQ } from "@/components/landing/enterprise/EnterpriseFAQ";
 import { EnterpriseCTA } from "@/components/landing/enterprise/EnterpriseCTA";

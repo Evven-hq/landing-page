@@ -7,7 +7,7 @@ const faqs = [
       "Nope — invite anyone to a group with a simple link. They can join in seconds and start tracking expenses right away, free.",
   },
   {
-    question: "Can I use EvenUp for recurring expenses?",
+    question: "Can I use Evven for recurring expenses?",
     answer:
       "Yes. You can track subscriptions, monthly bills, and repeated payments with flexible split options.",
   },

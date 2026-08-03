@@ -32,8 +32,8 @@ export default function AboutPage() {
       <div className="fixed top-5 left-4 z-50 sm:top-6 sm:left-6 md:top-8 md:left-8 lg:left-12">
         <Link href="/" className="transition-opacity hover:opacity-80">
           <Image
-            src="/EvenUp-black.svg"
-            alt="EvenUp"
+            src="/Evven-black.svg"
+            alt="Evven"
             width={70}
             height={70}
             className="w-12 h-12 sm:w-14 sm:h-14 md:w-[70px] md:h-[70px]"
