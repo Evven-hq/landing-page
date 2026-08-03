@@ -94,7 +94,7 @@ export const metadata: Metadata = {
     siteName: 'Evven',
     images: [
       {
-        url: 'https://evven.xyz/og-image.jpg',
+        url: 'https://evven.xyz/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Evven - Split expenses. Stay even.',
@@ -107,7 +107,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Evven: Split bills. Not friendships.',
     description: 'Keep shared costs fair, clear, and totally handled.',
-    images: ['https://evven.xyz/og-image.jpg'],
+    images: ['https://evven.xyz/og-image.png'],
     creator: '@EvvenHQ',
   },
 
