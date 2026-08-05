@@ -5,6 +5,7 @@ import Header from "@/components/landing/personal/Header";
 import { Hero } from "@/components/landing/personal/hero";
 import { useLandingAnimations } from "@/components/landing/useLandingAnimations";
 
+const Download = dynamic(() => import("@/components/landing/personal/Download").then((m) => m.Download), { ssr: false });
 const Features = dynamic(() => import("@/components/landing/personal/Features").then((m) => m.Features), { ssr: false });
 const HowItWorks = dynamic(() => import("@/components/landing/personal/HowItWorks").then((m) => m.HowItWorks), { ssr: false });
 const UseCases = dynamic(() => import("@/components/landing/personal/UseCases").then((m) => m.UseCases), { ssr: false });
@@ -21,6 +22,7 @@ export default function HomePage() {
     <main className="relative">
         <Header />
         <Hero />
+        <Download />
         <Features />
         <HowItWorks />
         <UseCases />
