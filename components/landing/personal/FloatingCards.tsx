@@ -1,106 +1,238 @@
 "use client";
 
 /**
- * FloatingCards — persistent expense cards that live in a fixed overlay
- * and morph their content / position as the user scrolls through sections.
+ * FloatingCards — 5 cards that live in a fixed overlay and morph their
+ * position + content as the user scrolls through each section.
  *
- * Scroll milestones:
- *  0      → Hero:        scattered floating cards (original positions)
- *  1      → Download:    cards cluster bottom-left like an install receipt
- *  2      → Features:    cards expand into a 3-column feature grid row
- *  3      → HowItWorks:  cards stack vertically on the right as step markers
- *  4+     → hide cleanly
+ * Stage 0 → Hero:       scattered expense receipt cards
+ * Stage 1 → Download:   morphs into Android install / receipt cards
+ * Stage 2 → Features:   morphs into the 3 feature-highlight cards (01/02/03)
+ * Stage 3 → HowItWorks: morphs into the 3 step cards (Track / Split / Settle)
+ * Stage 4 → UseCases+:  fade out
+ *
+ * Content cross-fades at the midpoint of each position tween so the
+ * spatial movement and content change feel like one fluid morph.
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* ── Card data at each scroll milestone ── */
-const STAGES: {
-  label: string;
-  amount: string;
-  sub: string;
-  // vw/vh percentages for each of the 5 cards at this stage
-  positions: { x: string; y: string; rotate: number; scale: number }[];
-}[] = [
+/* ─────────────────────── Types ───────────────────────── */
+type CardContent = {
+  tag: string;
+  headline: string;
+  body: string;
+  accent?: boolean; // green background highlight
+};
+
+type StageConfig = {
+  cards: (CardContent | null)[]; // null = invisible at this stage
+  positions: {
+    x: string;
+    y: string;
+    rotate: number;
+    scale: number;
+    opacity: number;
+    width: string;
+  }[];
+};
+
+/* ─────────────────────── Stage data ──────────────────── */
+const STAGES: StageConfig[] = [
+  // ── Stage 0: Hero — scattered expense cards ────────────
   {
-    // ── Stage 0: Hero — scattered
-    label: "",
-    amount: "",
-    sub: "",
+    cards: [
+      { tag: "Dinner",    headline: "$112.40",   body: "Split 4 ways · paid by Alex" },
+      { tag: "Airbnb",    headline: "$640.00",   body: "Split 6 ways · 3 owe you" },
+      { tag: "Groceries", headline: "$38.75",    body: "Split 2 ways · settled" },
+      { tag: "Petrol",    headline: "$54.20",    body: "3 ways · you owe €18" },
+      { tag: "Flights",   headline: "$1,240.00", body: "Group trip · 5 people" },
+    ],
     positions: [
-      { x: "4vw",   y: "18vh",  rotate: -4,   scale: 1 },
-      { x: "76vw",  y: "22vh",  rotate: 3.5,  scale: 1 },
-      { x: "6vw",   y: "56vh",  rotate: 2,    scale: 1 },
-      { x: "76vw",  y: "52vh",  rotate: -3,   scale: 1 },
-      { x: "44vw",  y: "78vh",  rotate: 1.5,  scale: 1 },
+      { x: "3vw",   y: "19vh", rotate: -4,   scale: 1,    opacity: 1, width: "160px" },
+      { x: "77vw",  y: "16vh", rotate: 3.5,  scale: 1,    opacity: 1, width: "160px" },
+      { x: "5vw",   y: "58vh", rotate: 2,    scale: 1,    opacity: 1, width: "160px" },
+      { x: "76vw",  y: "55vh", rotate: -3,   scale: 1,    opacity: 1, width: "160px" },
+      { x: "43vw",  y: "70vh", rotate: 1.5,  scale: 1,    opacity: 1, width: "160px" },
     ],
   },
+
+  // ── Stage 1: Download — APK install receipt stack ──────
   {
-    // ── Stage 1: Download — tight cluster, bottom-left receipt stack
-    label: "",
-    amount: "",
-    sub: "",
+    cards: [
+      {
+        tag: "Android · v0.0.1",
+        headline: "Evven Beta",
+        body: "Tap to download the APK",
+        accent: true,
+      },
+      { tag: "Platform",  headline: "Android",      body: "Requires 8.0+" },
+      { tag: "Size",      headline: "~12 MB",        body: "Direct APK install" },
+      { tag: "iOS",       headline: "Coming soon",   body: "Sign up for early access" },
+      null, // 5th card hidden
+    ],
     positions: [
-      { x: "3vw",   y: "62vh",  rotate: -2,   scale: 0.88 },
-      { x: "3vw",   y: "68vh",  rotate: 1,    scale: 0.88 },
-      { x: "3vw",   y: "74vh",  rotate: -1,   scale: 0.88 },
-      { x: "3vw",   y: "80vh",  rotate: 2,    scale: 0.88 },
-      { x: "3vw",   y: "86vh",  rotate: -0.5, scale: 0.88 },
+      { x: "5vw",  y: "34vh", rotate: -1.5, scale: 1.05, opacity: 1, width: "180px" },
+      { x: "5vw",  y: "54vh", rotate: 0.5,  scale: 0.9,  opacity: 1, width: "150px" },
+      { x: "5vw",  y: "68vh", rotate: -0.5, scale: 0.9,  opacity: 1, width: "150px" },
+      { x: "5vw",  y: "82vh", rotate: 1,    scale: 0.9,  opacity: 1, width: "150px" },
+      { x: "5vw",  y: "96vh", rotate: 0,    scale: 0,    opacity: 0, width: "150px" },
     ],
   },
+
+  // ── Stage 2: Features — feature highlight cards ────────
   {
-    // ── Stage 2: Features — spread horizontally across top
-    label: "",
-    amount: "",
-    sub: "",
+    cards: [
+      {
+        tag: "01",
+        headline: "No more guessing who paid",
+        body: "Every expense is instantly visible to everyone.",
+      },
+      {
+        tag: "02",
+        headline: "The math, done for you",
+        body: "Split evenly, by percentage, or exact shares.",
+      },
+      {
+        tag: "03",
+        headline: "Settle up in seconds",
+        body: "See who paid what and mark it settled.",
+      },
+      null,
+      null,
+    ],
     positions: [
-      { x: "5vw",   y: "14vh",  rotate: -1.5, scale: 0.82 },
-      { x: "25vw",  y: "12vh",  rotate: 1,    scale: 0.82 },
-      { x: "45vw",  y: "14vh",  rotate: -0.5, scale: 0.82 },
-      { x: "65vw",  y: "12vh",  rotate: 1.5,  scale: 0.82 },
-      { x: "80vw",  y: "14vh",  rotate: -1,   scale: 0.82 },
+      { x: "4vw",  y: "10vh",  rotate: -0.8, scale: 0.88, opacity: 1, width: "200px" },
+      { x: "35vw", y: "10vh",  rotate: 0.4,  scale: 0.88, opacity: 1, width: "200px" },
+      { x: "66vw", y: "10vh",  rotate: -0.5, scale: 0.88, opacity: 1, width: "200px" },
+      { x: "20vw", y: "10vh",  rotate: 0,    scale: 0,    opacity: 0, width: "160px" },
+      { x: "52vw", y: "10vh",  rotate: 0,    scale: 0,    opacity: 0, width: "160px" },
     ],
   },
+
+  // ── Stage 3: HowItWorks — step cards on right ─────────
   {
-    // ── Stage 3: HowItWorks — stack on right edge, step markers
-    label: "",
-    amount: "",
-    sub: "",
+    cards: [
+      {
+        tag: "Step 01 · Track",
+        headline: "Capture every expense",
+        body: "Snap a receipt or log it in seconds.",
+      },
+      {
+        tag: "Step 02 · Split",
+        headline: "Split it your way",
+        body: "Even, by %, or custom shares.",
+      },
+      {
+        tag: "Step 03 · Settle",
+        headline: "Close the loop",
+        body: "See balances and mark it paid.",
+      },
+      null,
+      null,
+    ],
     positions: [
-      { x: "80vw",  y: "22vh",  rotate: 0,    scale: 0.78 },
-      { x: "82vw",  y: "38vh",  rotate: 0,    scale: 0.78 },
-      { x: "80vw",  y: "54vh",  rotate: 0,    scale: 0.78 },
-      { x: "82vw",  y: "70vh",  rotate: 0,    scale: 0.78 },
-      { x: "80vw",  y: "82vh",  rotate: 0,    scale: 0.78 },
+      { x: "76vw", y: "24vh",  rotate: 0,  scale: 0.85, opacity: 1, width: "190px" },
+      { x: "76vw", y: "46vh",  rotate: 0,  scale: 0.85, opacity: 1, width: "190px" },
+      { x: "76vw", y: "68vh",  rotate: 0,  scale: 0.85, opacity: 1, width: "190px" },
+      { x: "76vw", y: "90vh",  rotate: 0,  scale: 0,    opacity: 0, width: "160px" },
+      { x: "76vw", y: "110vh", rotate: 0,  scale: 0,    opacity: 0, width: "160px" },
+    ],
+  },
+
+  // ── Stage 4: UseCases+ — all cards fade out ────────────
+  {
+    cards: [null, null, null, null, null],
+    positions: [
+      { x: "50vw", y: "50vh", rotate: 0, scale: 0, opacity: 0, width: "160px" },
+      { x: "50vw", y: "50vh", rotate: 0, scale: 0, opacity: 0, width: "160px" },
+      { x: "50vw", y: "50vh", rotate: 0, scale: 0, opacity: 0, width: "160px" },
+      { x: "50vw", y: "50vh", rotate: 0, scale: 0, opacity: 0, width: "160px" },
+      { x: "50vw", y: "50vh", rotate: 0, scale: 0, opacity: 0, width: "160px" },
     ],
   },
 ];
 
-const CARD_DATA = [
-  { label: "Dinner",    amount: "$112.40",   sub: "Split 4 ways · paid by Alex" },
-  { label: "Airbnb",   amount: "$640.00",   sub: "Split 6 ways · 3 owe you" },
-  { label: "Groceries",amount: "$38.75",    sub: "Split 2 ways · settled" },
-  { label: "Petrol",   amount: "$54.20",    sub: "3 ways · you owe €18" },
-  { label: "Flights",  amount: "$1,240.00", sub: "Group trip · 5 people" },
-];
-
-/* ── Mini barcode sparkline ── */
-function Barcode({ seed = 0 }: { seed?: number }) {
+/* ─────────────────────── Card component ──────────────── */
+function Card({
+  content,
+  cardRef,
+}: {
+  content: CardContent;
+  cardRef: (el: HTMLDivElement | null) => void;
+}) {
   return (
-    <div className="flex items-end gap-[2px] mb-2" aria-hidden>
-      {Array.from({ length: 18 }).map((_, i) => (
+    <div
+      ref={cardRef}
+      className="absolute pointer-events-none"
+      style={{ willChange: "transform, opacity, width" }}
+    >
+      {/* Outer shell — border always visible, background swaps */}
+      <div
+        className="rounded-2xl border border-[var(--evven-border)] backdrop-blur-md shadow-lg overflow-hidden"
+        style={{
+          background: content.accent
+            ? "var(--evven-accent-primary)"
+            : "var(--evven-card-background)",
+          width: "100%",
+          minWidth: 140,
+        }}
+      >
+        {/* Mini barcode top strip */}
+        <MiniBarcode accent={content.accent} />
+
+        <div className="px-4 pb-4 pt-1">
+          <p
+            className="text-[9px] font-semibold uppercase tracking-[0.18em] mb-1.5 leading-tight"
+            style={{
+              color: content.accent
+                ? "rgba(255,255,255,0.65)"
+                : "var(--evven-text-muted)",
+            }}
+          >
+            {content.tag}
+          </p>
+          <p
+            className="text-[15px] font-bold leading-tight mb-1"
+            style={{
+              color: content.accent ? "#ffffff" : "var(--evven-text-primary)",
+            }}
+          >
+            {content.headline}
+          </p>
+          <p
+            className="text-[11px] leading-snug"
+            style={{
+              color: content.accent
+                ? "rgba(255,255,255,0.55)"
+                : "var(--evven-text-muted)",
+            }}
+          >
+            {content.body}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Thin animated barcode strip at top of every card */
+function MiniBarcode({ seed = 0, accent }: { seed?: number; accent?: boolean }) {
+  const bars = Array.from({ length: 22 });
+  return (
+    <div className="flex items-end gap-[1.5px] px-4 pt-3 pb-2" aria-hidden>
+      {bars.map((_, i) => (
         <div
           key={i}
-          className="rounded-t-sm"
+          className="flex-shrink-0 rounded-t-sm"
           style={{
-            width: i % 4 === 0 ? "3px" : "1.5px",
-            height: `${8 + Math.abs(Math.sin((i + seed) * 0.7)) * 14}px`,
-            background: "var(--evven-text-primary)",
-            opacity: 0.14 + (i % 3) * 0.07,
+            width: i % 5 === 0 ? "2.5px" : "1.2px",
+            height: `${5 + Math.abs(Math.sin((i + seed) * 0.72)) * 12}px`,
+            background: accent ? "rgba(255,255,255,0.35)" : "var(--evven-text-primary)",
+            opacity: accent ? 1 : 0.11 + (i % 3) * 0.07,
           }}
         />
       ))}
@@ -108,126 +240,210 @@ function Barcode({ seed = 0 }: { seed?: number }) {
   );
 }
 
+/* ─────────────────────── Main overlay ────────────────── */
 export function FloatingCards() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<HTMLDivElement[]>([]);
+  const shellRefs = useRef<(HTMLDivElement | null)[]>(Array(5).fill(null));
+  const contentRefs = useRef<(HTMLDivElement | null)[]>(Array(5).fill(null));
+  const currentStage = useRef(0);
+  const idleTimelines = useRef<gsap.core.Tween[]>([]);
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+  // React state drives only the visible card content (cross-fade)
+  const [contents, setContents] = useState<(CardContent | null)[]>(
+    STAGES[0].cards as (CardContent | null)[]
+  );
 
-    const cards = cardRefs.current.filter(Boolean);
-    if (cards.length < 5) return;
+  /* ── Content cross-fade helper ── */
+  const swapContent = useCallback((nextStage: number) => {
+    const nextCards = STAGES[nextStage].cards;
 
-    /* ── Set initial hero positions ── */
-    const stage0 = STAGES[0].positions;
-    cards.forEach((card, i) => {
-      gsap.set(card, {
-        left: stage0[i].x,
-        top: stage0[i].y,
-        rotate: stage0[i].rotate,
-        scale: stage0[i].scale,
-        opacity: 0,
-        force3D: true,
+    // Fade content out on each card that's changing
+    contentRefs.current.forEach((el, i) => {
+      if (!el) return;
+      gsap.to(el, { opacity: 0, duration: 0.18, ease: "power1.in" });
+    });
+
+    gsap.delayedCall(0.22, () => {
+      setContents(nextCards as (CardContent | null)[]);
+      contentRefs.current.forEach((el) => {
+        if (!el) return;
+        gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "power2.out" });
       });
     });
+  }, []);
 
-    /* ── Entrance: stagger in after hero loads ── */
-    gsap.to(cards, {
-      opacity: 1,
-      duration: 0.65,
-      ease: "power3.out",
-      stagger: 0.1,
-      delay: 1.4,
-    });
+  /* ── Position + size morph helper ── */
+  const morphToStage = useCallback(
+    (nextStage: number, dur = 1.05) => {
+      if (nextStage === currentStage.current) return;
+      const stageIdx = Math.max(0, Math.min(nextStage, STAGES.length - 1));
+      const stage = STAGES[stageIdx];
+      currentStage.current = stageIdx;
 
-    /* ── Helper: animate all cards to a given stage ── */
-    const morphToStage = (stageIdx: number, duration = 1.1) => {
-      const stage = STAGES[Math.min(stageIdx, STAGES.length - 1)];
-      cards.forEach((card, i) => {
+      // Trigger content swap at 50% of the movement tween
+      gsap.delayedCall(dur * 0.5, () => swapContent(stageIdx));
+
+      shellRefs.current.forEach((el, i) => {
+        if (!el) return;
         const pos = stage.positions[i];
-        gsap.to(card, {
-          left: pos.x,
-          top: pos.y,
-          rotate: pos.rotate,
-          scale: pos.scale,
-          opacity: stageIdx >= STAGES.length ? 0 : 1,
-          duration,
+        gsap.to(el, {
+          left:    pos.x,
+          top:     pos.y,
+          rotate:  pos.rotate,
+          scale:   pos.scale,
+          opacity: pos.opacity,
+          width:   pos.width,
+          duration: dur,
           ease: "power3.inOut",
           overwrite: "auto",
         });
       });
-    };
+    },
+    [swapContent]
+  );
 
-    /* ── ScrollTrigger for each section ── */
-    const sections = [
-      { id: "#download",      stage: 1 },
-      { id: "#features",      stage: 2 },
-      { id: "#how-it-works",  stage: 3 },
-      { id: "#use-cases",     stage: 4 }, // hide
+  useEffect(() => {
+    const shells = shellRefs.current.filter(Boolean) as HTMLDivElement[];
+    if (shells.length < 5) return;
+
+    /* ── Set initial state from Stage 0 ── */
+    STAGES[0].positions.forEach((pos, i) => {
+      gsap.set(shells[i], {
+        left:    pos.x,
+        top:     pos.y,
+        rotate:  pos.rotate,
+        scale:   pos.scale,
+        opacity: 0,
+        width:   pos.width,
+        force3D: true,
+      });
+    });
+
+    /* ── Stagger entrance after hero loads ── */
+    gsap.to(shells, {
+      opacity: 1,
+      duration: 0.7,
+      ease: "power3.out",
+      stagger: 0.1,
+      delay: 1.5,
+    });
+
+    /* ── Idle float per card (overwritten on morph, restored after) ── */
+    const startIdle = () => {
+      idleTimelines.current.forEach((t) => t.kill());
+      idleTimelines.current = shells.map((el) =>
+        gsap.to(el, {
+          y: `+=${5 + Math.random() * 9}`,
+          duration: 2.2 + Math.random() * 2,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: Math.random() * 2,
+        })
+      );
+    };
+    gsap.delayedCall(2.0, startIdle);
+
+    /* ── ScrollTrigger per section ── */
+    const milestones = [
+      { selector: "#download",     stage: 1 },
+      { selector: "#features",     stage: 2 },
+      { selector: "#how-it-works", stage: 3 },
+      { selector: "#use-cases",    stage: 4 },
     ];
 
-    sections.forEach(({ id, stage }) => {
-      const el = document.querySelector(id);
+    milestones.forEach(({ selector, stage }) => {
+      const el = document.querySelector(selector);
       if (!el) return;
 
       ScrollTrigger.create({
         trigger: el,
-        start: "top 60%",
-        end: "top 20%",
-        onEnter:  () => morphToStage(stage),
+        start: "top 58%",
+        end: "top 15%",
+        onEnter:     () => morphToStage(stage),
         onLeaveBack: () => morphToStage(stage - 1),
       });
     });
 
-    /* ── Subtle idle float per card ── */
-    cards.forEach((card) => {
-      gsap.to(card, {
-        y: `+=${6 + Math.random() * 8}`,
-        duration: 2.4 + Math.random() * 1.8,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-        delay: Math.random() * 2,
-      });
-    });
-
     return () => {
+      idleTimelines.current.forEach((t) => t.kill());
       ScrollTrigger.getAll().forEach((t) => t.kill());
     };
-  }, []);
+  }, [morphToStage]);
 
   return (
-    /* Fixed overlay — sits above everything, pointer-events none */
     <div
-      ref={containerRef}
       className="fixed inset-0 z-20 pointer-events-none overflow-hidden"
       aria-hidden
     >
-      {CARD_DATA.map((card, i) => (
-        <div
-          key={card.label}
-          ref={(el) => { if (el) cardRefs.current[i] = el; }}
-          className="absolute"
-          style={{ willChange: "transform, opacity" }}
-        >
+      {contents.map((content, i) => {
+        if (!content) {
+          // Invisible placeholder that GSAP still animates to keep the index stable
+          return (
+            <div
+              key={i}
+              ref={(el) => { shellRefs.current[i] = el; }}
+              className="absolute"
+              style={{ opacity: 0, willChange: "transform, opacity" }}
+            />
+          );
+        }
+
+        return (
           <div
-            className="rounded-2xl border border-[var(--evven-border)] bg-[var(--evven-card-background)]/90 backdrop-blur-md px-4 py-3 shadow-md"
-            style={{ minWidth: 148, maxWidth: 176 }}
+            key={i}
+            ref={(el) => { shellRefs.current[i] = el; }}
+            className="absolute"
+            style={{ willChange: "transform, opacity, width" }}
           >
-            <Barcode seed={i * 7} />
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--evven-text-muted)]">
-              {card.label}
-            </p>
-            <p className="text-base font-bold text-[var(--evven-text-primary)] leading-tight mt-0.5">
-              {card.amount}
-            </p>
-            <p className="text-[10px] text-[var(--evven-text-muted)] mt-0.5 leading-snug">
-              {card.sub}
-            </p>
+            {/* Content wrapper fades independently during content swaps */}
+            <div
+              ref={(el) => { contentRefs.current[i] = el; }}
+            >
+              <div
+                className="rounded-2xl border border-[var(--evven-border)] backdrop-blur-md shadow-lg overflow-hidden"
+                style={{
+                  background: content.accent
+                    ? "var(--evven-accent-primary)"
+                    : "color-mix(in srgb, var(--evven-card-background) 92%, transparent)",
+                }}
+              >
+                <MiniBarcode seed={i * 9} accent={content.accent} />
+                <div className="px-4 pb-4 pt-0.5">
+                  <p
+                    className="text-[9px] font-semibold uppercase tracking-[0.18em] mb-1.5 leading-tight"
+                    style={{
+                      color: content.accent
+                        ? "rgba(255,255,255,0.6)"
+                        : "var(--evven-accent-primary)",
+                    }}
+                  >
+                    {content.tag}
+                  </p>
+                  <p
+                    className="font-bold leading-tight mb-1.5"
+                    style={{
+                      fontSize: content.tag.startsWith("0") ? "13px" : "15px",
+                      color: content.accent ? "#ffffff" : "var(--evven-text-primary)",
+                    }}
+                  >
+                    {content.headline}
+                  </p>
+                  <p
+                    className="text-[11px] leading-snug"
+                    style={{
+                      color: content.accent
+                        ? "rgba(255,255,255,0.52)"
+                        : "var(--evven-text-muted)",
+                    }}
+                  >
+                    {content.body}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
