@@ -1,242 +1,216 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Image from "next/image";
-import gsap from "gsap";
 import Link from "next/link";
+import gsap from "gsap";
 
-import dynamic from "next/dynamic";
+/* ── Barcode visual (animated thin vertical lines like DeepJudge) ── */
+function BarcodeLines() {
+  const containerRef = useRef<HTMLDivElement>(null);
 
-const Grainient = dynamic(() => import("@/components/ui/Grainient"), { ssr: false });
-import { ArrowRight } from "lucide-react";
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const lines = Array.from(el.querySelectorAll<HTMLDivElement>(".bar-line"));
 
+    // stagger in
+    gsap.set(lines, { scaleY: 0, transformOrigin: "bottom" });
+    gsap.to(lines, {
+      scaleY: 1,
+      duration: 1.2,
+      ease: "power3.out",
+      stagger: { each: 0.012, from: "center" },
+      delay: 0.6,
+    });
+
+    // subtle idle pulse
+    lines.forEach((line, i) => {
+      gsap.to(line, {
+        scaleY: 0.55 + Math.random() * 0.45,
+        duration: 1.8 + Math.random() * 1.6,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        delay: i * 0.03,
+      });
+    });
+  }, []);
+
+  const BAR_COUNT = 80;
+  const ACCENT_INDICES = new Set([12, 13, 31, 32, 58, 59, 72]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative w-full overflow-hidden"
+      style={{ height: "clamp(120px, 22vw, 260px)" }}
+      aria-hidden
+    >
+      <div className="flex items-end justify-center gap-[2px] h-full w-full px-4">
+        {Array.from({ length: BAR_COUNT }).map((_, i) => {
+          const isAccent = ACCENT_INDICES.has(i);
+          const baseH = 20 + Math.abs(Math.sin(i * 0.4 + 1)) * 65 + Math.random() * 20;
+          return (
+            <div
+              key={i}
+              className="bar-line flex-shrink-0 rounded-t-sm"
+              style={{
+                width: i % 5 === 0 ? "3px" : "1.5px",
+                height: `${baseH}%`,
+                background: isAccent
+                  ? "var(--evven-accent-primary)"
+                  : "var(--evven-text-primary)",
+                opacity: isAccent ? 0.9 : 0.18 + (i % 3) * 0.06,
+              }}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Hero ── */
 export function Hero() {
-  const characterRef = useRef<HTMLDivElement>(null);
-  const labelRef = useRef<HTMLSpanElement>(null);
-  const headingRef = useRef<HTMLHeadingElement>(null);
-  const paragraphRef = useRef<HTMLParagraphElement>(null);
-  const buttonsRef = useRef<HTMLDivElement>(null);
+  const annRef = useRef<HTMLDivElement>(null);
+  const headRef = useRef<HTMLHeadingElement>(null);
+  const subRef = useRef<HTMLParagraphElement>(null);
+  const btnsRef = useRef<HTMLDivElement>(null);
+  const barcodeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Set initial states immediately so elements are invisible
-      // before the timeline begins — prevents flash of visible content
-      gsap.set(
-        [
-          labelRef.current,
-          headingRef.current,
-          paragraphRef.current,
-          buttonsRef.current,
-        ],
-        { opacity: 0, y: 30 }
-      );
-      gsap.set(characterRef.current, { opacity: 0, x: 40 });
-
-      const tl = gsap.timeline({ delay: 0.1 });
-
-      tl.to(labelRef.current, {
-        y: 0,
-        opacity: 1,
-        duration: 0.7,
-        ease: "power3.out",
-      })
-        .to(
-          headingRef.current,
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.9,
-            ease: "power3.out",
-          },
-          "-=0.35"
-        )
-        .to(
-          paragraphRef.current,
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.7,
-            ease: "power3.out",
-          },
-          "-=0.45"
-        )
-        .to(
-          buttonsRef.current,
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.6,
-            ease: "power3.out",
-          },
-          "-=0.4"
-        )
-        .to(
-          characterRef.current,
-          {
-            opacity: 1,
-            x: 0,
-            duration: 1,
-            ease: "power3.out",
-          },
-          "-=0.8"
-        );
-
-      gsap.to(characterRef.current, {
-        y: -20,
-        duration: 3,
-        repeat: -1,
-        yoyo: true,
-        ease: "power1.inOut",
-        delay: 0.9,
+      gsap.set([annRef.current, headRef.current, subRef.current, btnsRef.current, barcodeRef.current], {
+        opacity: 0,
+        y: 28,
       });
 
-      const handleMouseMove = (e: MouseEvent) => {
-        const x = (e.clientX / window.innerWidth - 0.5) * 25;
-        const y = (e.clientY / window.innerHeight - 0.5) * 15;
-
-        gsap.to(characterRef.current, {
-          x,
-          y,
-          duration: 1,
-          ease: "power3.out",
-        });
-      };
-
-      window.addEventListener("mousemove", handleMouseMove);
-
-      // Store cleanup on the context so it runs with ctx.revert()
-      return () => {
-        window.removeEventListener("mousemove", handleMouseMove);
-      };
+      const tl = gsap.timeline({ delay: 0.05 });
+      tl.to(annRef.current, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" })
+        .to(headRef.current, { opacity: 1, y: 0, duration: 0.9, ease: "power3.out" }, "-=0.3")
+        .to(subRef.current, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, "-=0.45")
+        .to(btnsRef.current, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, "-=0.4")
+        .to(barcodeRef.current, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, "-=0.5");
     });
-
     return () => ctx.revert();
   }, []);
 
   return (
-    <section className="relative min-h-[100svh] w-full overflow-hidden bg-background">
-      {/* Background Grid Distortion */}
-      <div className="absolute inset-0 flex min-h-[100svh] w-full items-center justify-center">
-        <Grainient
-          color1="#325149"
-          color2="#faf8f5"
-          color3="#8b8480"
-          timeSpeed={1.2}
-          colorBalance={-0.07}
-          warpStrength={0.3}
-          warpFrequency={3.7}
-          warpSpeed={1.4}
-          warpAmplitude={50}
-          blendAngle={29}
-          blendSoftness={0.64}
-          rotationAmount={580}
-          noiseScale={1.65}
-          grainAmount={0.06}
-          grainScale={5}
-          grainAnimated={false}
-          contrast={1.35}
-          gamma={0.95}
-          saturation={1.3}
-          centerX={0}
-          centerY={0}
-          zoom={0.9}
-        />
-      </div>
-
-      {/* HERO CONTENT */}
-      <div className="relative z-10 flex min-h-[100svh] w-full items-center px-5 py-20 sm:px-8 lg:px-0">
-        {/* Left Content */}
-        <div className="mx-auto flex w-full max-w-[720px] flex-col lg:ml-[15vw] lg:mx-0">
-          <span
-            ref={labelRef}
-            className="mb-5 text-[10px] font-medium uppercase tracking-[0.28em] text-[#000000] sm:mb-8 sm:text-xs sm:tracking-[0.35em]"
-          >
-            For Roommates, Trips & Everything In Between
-          </span>
-
-          <h1
-            ref={headingRef}
-            className="hero-main-text max-w-[12ch] text-5xl font-black leading-[0.95] tracking-tighter text-slate-900 sm:text-6xl md:text-7xl lg:text-[6.5rem]"
-          >
-            Split bills.
-            <br />
-            Not friendships.
-          </h1>
-
-          <p
-            ref={paragraphRef}
-            className="mt-6 max-w-[520px] text-base leading-[1.7] text-slate-700 sm:mt-10 sm:text-lg sm:leading-[1.75]"
-          >
-            Stop doing math in the group chat. Evven tracks every shared expense
-            automatically, settles balances instantly, and keeps the &quot;you
-            still owe me&quot; conversations out of your friendships.
-          </p>
-
-          <div
-            ref={buttonsRef}
-            className="mt-10 flex flex-col gap-4 sm:mt-14 sm:flex-row sm:items-center sm:gap-6"
-          >
-            <Link
-              href="https://app.evven.xyz/signup"
-              className="
-                group
-                inline-flex w-full items-center justify-center gap-2
-                rounded-full
-                bg-slate-900
-                px-6 py-3
-                text-sm font-medium text-white
-                transition-all duration-300
-                hover:scale-[1.02]
-                sm:w-auto
-              "
-            >
-              Start splitting for free
-              <ArrowRight
-                size={15}
-                className="transition-transform duration-300 group-hover:translate-x-1"
-              />
-            </Link>
-
-            <button
-              className="
-                text-sm
-                font-medium
-                text-slate-700
-                text-left
-                transition-colors duration-300
-                hover:text-slate-900
-                sm:text-center
-              "
-            >
-              See how it works ↓
-            </button>
-          </div>
-        </div>
-
-      {/* Character */}
+    <section className="relative w-full bg-background overflow-hidden pt-28 pb-0 md:pt-36">
+      {/* Subtle grid texture */}
       <div
-        ref={characterRef}
-        className="absolute right-50 bottom-0 hidden lg:block"
-      >
-        <Image
-          src="/hero-img.png"
-            alt="Hero Character"
-            width={600}
-            height={800}
-            priority
+        className="pointer-events-none absolute inset-0 opacity-[0.025]"
+        style={{
+          backgroundImage:
+            "linear-gradient(var(--evven-text-primary) 1px, transparent 1px), linear-gradient(90deg, var(--evven-text-primary) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+        aria-hidden
+      />
+
+      <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
+        {/* Announcement pill */}
+        <div ref={annRef} className="flex justify-center mb-8 md:mb-10">
+          <a
+            href="https://github.com/Evven-hq"
+            target="_blank"
+            rel="noreferrer"
             className="
-              pointer-events-none
-              select-none
-              object-contain
-              -scale-x-100
+              inline-flex items-center gap-2
+              px-4 py-1.5 rounded-full
+              border border-[var(--evven-border)]
+              bg-white text-xs font-medium
+              text-[var(--evven-text-muted)]
+              hover:border-[var(--evven-accent-primary)]/40
+              hover:text-[var(--evven-text-primary)]
+              transition-all duration-200
             "
-            draggable={false}
-          />
+          >
+            <span
+              className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--evven-accent-primary)]"
+              aria-hidden
+            />
+            Open source — view on GitHub
+            <span className="opacity-60" aria-hidden>→</span>
+          </a>
+        </div>
+
+        {/* Headline */}
+        <h1
+          ref={headRef}
+          className="
+            hero-main-text
+            text-[clamp(3.6rem,9vw,8rem)]
+            leading-[0.92]
+            tracking-[-0.04em]
+            text-[var(--evven-text-primary)]
+            text-balance
+            mx-auto
+            max-w-[14ch]
+          "
+        >
+          Split bills.
+          <br />
+          Not&nbsp;friendships.
+        </h1>
+
+        {/* Sub */}
+        <p
+          ref={subRef}
+          className="
+            mt-7 md:mt-9
+            mx-auto max-w-xl
+            text-base md:text-lg
+            leading-[1.7]
+            text-[var(--evven-text-muted)]
+          "
+        >
+          Stop doing math in the group chat. Evven tracks every shared expense
+          automatically, settles balances instantly, and keeps the money
+          conversations out of your friendships.
+        </p>
+
+        {/* Buttons */}
+        <div
+          ref={btnsRef}
+          className="mt-9 md:mt-11 flex flex-col sm:flex-row items-center justify-center gap-3"
+        >
+          <Link
+            href="https://app.evven.xyz/signup"
+            className="
+              inline-flex items-center gap-2
+              px-6 py-3 rounded-full
+              bg-[var(--evven-accent-primary)] text-white
+              text-sm font-semibold
+              hover:bg-[var(--evven-accent-primary)]/90
+              transition-all duration-200
+              hover:scale-[1.02]
+            "
+          >
+            Start splitting for free
+          </Link>
+          <a
+            href="#how-it-works"
+            className="
+              inline-flex items-center gap-1.5
+              px-6 py-3 rounded-full
+              border border-[var(--evven-border)]
+              bg-white
+              text-sm font-medium text-[var(--evven-text-muted)]
+              hover:text-[var(--evven-text-primary)]
+              hover:border-[var(--evven-text-primary)]/30
+              transition-all duration-200
+            "
+          >
+            See how it works
+          </a>
         </div>
       </div>
 
-      {/* Bottom blur gradient */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 h-[14vh] bg-gradient-to-b from-transparent to-[#faf8f5] sm:h-[18vh]" />
+      {/* Barcode visual — spans full width below content */}
+      <div ref={barcodeRef} className="relative z-10 mt-16 md:mt-20 w-full">
+        <BarcodeLines />
+      </div>
     </section>
   );
 }

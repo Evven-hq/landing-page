@@ -14,29 +14,46 @@ const features = [
   {
     title: "Settle up in seconds",
     description:
-      "See exactly who paid what, mark it as settled, and move on. No more chasing people for Venmo.",
+      "See exactly who paid what, mark it as settled, and move on. No more chasing people down for Venmo.",
   },
 ];
 
 export function Features() {
   return (
-    <section id="features" className="section-animate px-6 py-24 sm:py-32">
+    <section id="features" className="section-animate px-6 py-28 sm:py-36 bg-background">
       <div className="mx-auto max-w-5xl">
-        <div className="space-y-6 mb-20">
-          <p className="section-label">Core Features</p>
-          <h2 className="text-5xl sm:text-6xl font-heading tracking-tight">
-            Everything you need to split expenses and settle up.
-          </h2>
-        </div>
+        {/* Section label */}
+        <p className="section-label mb-6">Core Features</p>
 
-        <div className="grid gap-8 lg:grid-cols-3">
+        {/* Editorial headline — large, left-aligned, serif like DeepJudge */}
+        <h2 className="hero-main-text text-[clamp(2.8rem,6vw,5.5rem)] leading-[0.95] tracking-[-0.04em] text-[var(--evven-text-primary)] max-w-[16ch] mb-20">
+          The only expense tracker your group will actually use.
+        </h2>
+
+        {/* Feature grid */}
+        <div className="grid gap-0 lg:grid-cols-3 border-t border-[var(--evven-border)]">
           {features.map((feature, idx) => (
-            <div key={feature.title} className="feature-card space-y-4 pt-8 pb-8 border-t border-[var(--evven-border)]">
-              <div className="w-12 h-12 rounded-lg bg-[var(--evven-accent-secondary)] flex items-center justify-center text-base font-semibold text-[var(--evven-accent-primary)]">
-                {idx + 1}
-              </div>
-              <h3 className="text-xl font-semibold text-[var(--evven-text-primary)]">{feature.title}</h3>
-              <p className="text-[var(--evven-text-muted)] leading-relaxed">{feature.description}</p>
+            <div
+              key={feature.title}
+              className="
+                feature-card
+                py-10 pr-10
+                border-b lg:border-b-0
+                lg:border-r
+                border-[var(--evven-border)]
+                last:border-r-0 last:border-b-0
+                space-y-4
+              "
+            >
+              <span className="inline-block text-xs font-semibold tracking-[0.15em] text-[var(--evven-accent-primary)] uppercase">
+                0{idx + 1}
+              </span>
+              <h3 className="text-xl font-semibold text-[var(--evven-text-primary)] leading-snug">
+                {feature.title}
+              </h3>
+              <p className="text-[var(--evven-text-muted)] leading-relaxed text-[15px]">
+                {feature.description}
+              </p>
             </div>
           ))}
         </div>

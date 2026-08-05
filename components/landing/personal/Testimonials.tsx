@@ -23,29 +23,35 @@ const testimonials = [
 
 export function Testimonials() {
   return (
-    <section className="section-animate bg-white px-6 py-24 sm:py-32">
+    <section className="section-animate bg-white px-6 py-28 sm:py-36">
       <div className="mx-auto max-w-5xl">
-        <div className="space-y-6 mb-16">
-          <p className="section-label">Testimonials</p>
-          <h2 className="text-5xl sm:text-6xl font-heading tracking-tight">
-            Trusted by groups everywhere.
-          </h2>
-        </div>
+        <p className="section-label mb-6">Testimonials</p>
 
-        <div className="grid gap-12 lg:grid-cols-2">
-          {testimonials.map((testimonial) => (
+        {/* DeepJudge-style: large serif callout + cards below */}
+        <h2 className="hero-main-text text-[clamp(2.6rem,5.5vw,5rem)] leading-[0.95] tracking-[-0.04em] text-[var(--evven-text-primary)] max-w-[18ch] mb-20">
+          What people say about Evven.
+        </h2>
+
+        <div className="grid gap-0 lg:grid-cols-3 border-t border-[var(--evven-border)]">
+          {testimonials.map((t) => (
             <blockquote
-              key={testimonial.name}
-              className="space-y-6 pb-12 border-b border-[var(--evven-border)]"
+              key={t.name}
+              className="
+                pt-10 pb-10 pr-10
+                border-b lg:border-b-0 lg:border-r
+                border-[var(--evven-border)]
+                last:border-r-0 last:border-b-0
+                space-y-6
+              "
             >
-              <p className="text-lg sm:text-xl leading-relaxed text-[var(--evven-text-primary)]">
-                &ldquo;{testimonial.quote}&rdquo;
+              <p className="text-base sm:text-lg leading-relaxed text-[var(--evven-text-primary)]">
+                &ldquo;{t.quote}&rdquo;
               </p>
-              <footer className="space-y-1">
-                <strong className="block text-base font-semibold text-[var(--evven-text-primary)]">
-                  {testimonial.name}
+              <footer className="space-y-0.5">
+                <strong className="block text-sm font-semibold text-[var(--evven-text-primary)]">
+                  {t.name}
                 </strong>
-                <p className="text-sm text-[var(--evven-text-muted)]">{testimonial.role}</p>
+                <p className="text-xs text-[var(--evven-text-muted)]">{t.role}</p>
               </footer>
             </blockquote>
           ))}

@@ -19,30 +19,51 @@ const useCases = [
   {
     title: "Events",
     description:
-      "Wedding gifts, group dinners, shared Airbnbs — keep every contribution clear without a single 'wait, did I already pay you back?'",
+      "Wedding gifts, group dinners, shared Airbnbs — keep every contribution clear without a single awkward follow-up.",
   },
 ];
 
 export function UseCases() {
   return (
-    <section className="section-animate px-6 py-24 sm:py-32 bg-[var(--evven-background)]">
+    <section className="section-animate px-6 py-28 sm:py-36 bg-background">
       <div className="mx-auto max-w-5xl">
-        <div className="space-y-6 mb-16">
-          <p className="section-label">Use Cases</p>
-          <h2 className="text-5xl sm:text-6xl font-heading tracking-tight">
-            Works for any group or occasion.
-          </h2>
-        </div>
+        <p className="section-label mb-6">Use Cases</p>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          {useCases.map((useCase) => (
-            <div key={useCase.title} className="space-y-4">
-              <h3 className="text-2xl font-semibold">{useCase.title}</h3>
-              <p className="text-[var(--evven-text-muted)] leading-relaxed">
-                {useCase.description}
-              </p>
-            </div>
-          ))}
+        {/* DeepJudge-style: large statement left, grid right on desktop */}
+        <div className="flex flex-col lg:flex-row lg:items-start lg:gap-20">
+          {/* Left: editorial heading */}
+          <div className="lg:w-[38%] mb-14 lg:mb-0 lg:sticky lg:top-32">
+            <h2 className="hero-main-text text-[clamp(2.6rem,5vw,4.5rem)] leading-[0.95] tracking-[-0.04em] text-[var(--evven-text-primary)]">
+              Works for any group or occasion.
+            </h2>
+          </div>
+
+          {/* Right: use case list */}
+          <div className="flex-1 space-y-0">
+            {useCases.map((uc, i) => (
+              <div
+                key={uc.title}
+                className="
+                  py-8
+                  border-t border-[var(--evven-border)]
+                  last:border-b
+                  flex flex-col sm:flex-row sm:items-start sm:gap-10
+                "
+              >
+                <span className="text-xs font-semibold tracking-[0.15em] text-[var(--evven-accent-primary)] uppercase w-20 flex-shrink-0 mb-3 sm:mb-0 sm:pt-0.5">
+                  0{i + 1}
+                </span>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold text-[var(--evven-text-primary)]">
+                    {uc.title}
+                  </h3>
+                  <p className="text-[var(--evven-text-muted)] leading-relaxed text-[15px] max-w-md">
+                    {uc.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

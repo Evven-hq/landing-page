@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --evven-background: #faf8f5;
-  --evven-surface: #f5f3f0;
-  --evven-border: #c4bfb7;
-  --evven-card-background: #fefefe;
+  --evven-background: #f0ede6;
+  --evven-surface: #e8e4dc;
+  --evven-border: #d0cbc0;
+  --evven-card-background: #f8f5ef;
 
   --evven-text-primary: #1a1816;
   --evven-text-muted: #8b8480;

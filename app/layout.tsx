@@ -126,7 +126,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${jetBrains.className} ${xanh.className} ${homemadeApple.variable} ${baskervville.className} ${crimsonText.variable} ${instrumentSerif.variable} h-full antialiased`}
+      className={`${jetBrains.className} ${xanh.className} ${homemadeApple.variable} ${baskervville.className} ${crimsonText.variable} ${instrumentSerif.variable} h-full antialiased bg-background`}
     >
       <head>
         <link 

@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { Plus, Minus } from "lucide-react";
+
 const faqs = [
   {
     question: "Do the other people in my group need to sign up too?",
@@ -24,23 +27,42 @@ const faqs = [
 ];
 
 export function FAQ() {
-  return (
-    <section id="faq" className="section-animate bg-white px-6 py-24 sm:py-32">
-      <div className="mx-auto max-w-5xl">
-        <div className="space-y-6 mb-16">
-          <p className="section-label">FAQ</p>
-          <h2 className="text-5xl sm:text-6xl font-heading tracking-tight">
-            Got questions? We have answers.
-          </h2>
-        </div>
+  const [open, setOpen] = useState<number | null>(null);
 
-        <div className="space-y-8">
-          {faqs.map((faq) => (
-            <div key={faq.question} className="space-y-4 pb-8 border-b border-[var(--evven-border)]">
-              <h3 className="text-lg font-semibold text-[var(--evven-text-primary)]">
-                {faq.question}
-              </h3>
-              <p className="text-[var(--evven-text-muted)] leading-relaxed">{faq.answer}</p>
+  return (
+    <section id="faq" className="section-animate bg-background px-6 py-28 sm:py-36">
+      <div className="mx-auto max-w-5xl">
+        <p className="section-label mb-6">FAQ</p>
+        <h2 className="hero-main-text text-[clamp(2.6rem,5.5vw,5rem)] leading-[0.95] tracking-[-0.04em] text-[var(--evven-text-primary)] max-w-[16ch] mb-20">
+          Got questions? We have answers.
+        </h2>
+
+        <div className="border-t border-[var(--evven-border)]">
+          {faqs.map((faq, i) => (
+            <div key={faq.question} className="border-b border-[var(--evven-border)]">
+              <button
+                className="w-full flex items-start justify-between gap-6 py-7 text-left group"
+                onClick={() => setOpen(open === i ? null : i)}
+                aria-expanded={open === i}
+              >
+                <span className="text-base sm:text-lg font-medium text-[var(--evven-text-primary)] leading-snug pr-4">
+                  {faq.question}
+                </span>
+                <span className="flex-shrink-0 mt-0.5 text-[var(--evven-text-muted)] group-hover:text-[var(--evven-text-primary)] transition-colors">
+                  {open === i ? <Minus size={18} /> : <Plus size={18} />}
+                </span>
+              </button>
+
+              <div
+                className={`
+                  overflow-hidden transition-all duration-300
+                  ${open === i ? "max-h-96 pb-7" : "max-h-0"}
+                `}
+              >
+                <p className="text-[var(--evven-text-muted)] leading-relaxed text-[15px] max-w-2xl">
+                  {faq.answer}
+                </p>
+              </div>
             </div>
           ))}
         </div>
