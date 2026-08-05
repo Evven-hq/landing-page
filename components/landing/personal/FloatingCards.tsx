@@ -1,17 +1,15 @@
 "use client";
 
 /**
- * FloatingCards — 5 cards that live in a fixed overlay and morph their
- * position + content as the user scrolls through each section.
+ * FloatingCards
  *
- * Stage 0 → Hero:       scattered expense receipt cards
- * Stage 1 → Download:   morphs into Android install / receipt cards
- * Stage 2 → Features:   morphs into the 3 feature-highlight cards (01/02/03)
- * Stage 3 → HowItWorks: morphs into the 3 step cards (Track / Split / Settle)
- * Stage 4 → UseCases+:  fade out
+ * 5 cards in a fixed overlay. Each stage transition:
+ *  1. Measures actual DOM elements via data-float-target="N" inside the
+ *     target section to get exact pixel position + width.
+ *  2. Flies the floating cards to those coordinates via GSAP.
+ *  3. Cross-fades content at the midpoint of the tween.
  *
- * Content cross-fades at the midpoint of each position tween so the
- * spatial movement and content change feel like one fluid morph.
+ * All 5 shells stay mounted forever so GSAP never loses its target.
  */
 
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -20,219 +18,69 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* ─────────────────────── Types ───────────────────────── */
+/* ──────────────── Types ────────────────── */
 type CardContent = {
   tag: string;
   headline: string;
   body: string;
-  accent?: boolean; // green background highlight
+  accent?: boolean;
 };
 
-type StageConfig = {
-  cards: (CardContent | null)[]; // null = invisible at this stage
-  positions: {
-    x: string;
-    y: string;
-    rotate: number;
-    scale: number;
-    opacity: number;
-    width: string;
-  }[];
-};
-
-/* ─────────────────────── Stage data ──────────────────── */
-const STAGES: StageConfig[] = [
-  // ── Stage 0: Hero — scattered expense cards ────────────
-  {
-    cards: [
-      { tag: "Dinner",    headline: "$112.40",   body: "Split 4 ways · paid by Alex" },
-      { tag: "Airbnb",    headline: "$640.00",   body: "Split 6 ways · 3 owe you" },
-      { tag: "Groceries", headline: "$38.75",    body: "Split 2 ways · settled" },
-      { tag: "Petrol",    headline: "$54.20",    body: "3 ways · you owe €18" },
-      { tag: "Flights",   headline: "$1,240.00", body: "Group trip · 5 people" },
-    ],
-    positions: [
-      { x: "3vw",   y: "19vh", rotate: -4,   scale: 1,    opacity: 1, width: "160px" },
-      { x: "77vw",  y: "16vh", rotate: 3.5,  scale: 1,    opacity: 1, width: "160px" },
-      { x: "5vw",   y: "58vh", rotate: 2,    scale: 1,    opacity: 1, width: "160px" },
-      { x: "76vw",  y: "55vh", rotate: -3,   scale: 1,    opacity: 1, width: "160px" },
-      { x: "43vw",  y: "70vh", rotate: 1.5,  scale: 1,    opacity: 1, width: "160px" },
-    ],
-  },
-
-  // ── Stage 1: Download — APK install receipt stack ──────
-  {
-    cards: [
-      {
-        tag: "Android · v0.0.1",
-        headline: "Evven Beta",
-        body: "Tap to download the APK",
-        accent: true,
-      },
-      { tag: "Platform",  headline: "Android",      body: "Requires 8.0+" },
-      { tag: "Size",      headline: "~12 MB",        body: "Direct APK install" },
-      { tag: "iOS",       headline: "Coming soon",   body: "Sign up for early access" },
-      null, // 5th card hidden
-    ],
-    positions: [
-      { x: "5vw",  y: "34vh", rotate: -1.5, scale: 1.05, opacity: 1, width: "180px" },
-      { x: "5vw",  y: "54vh", rotate: 0.5,  scale: 0.9,  opacity: 1, width: "150px" },
-      { x: "5vw",  y: "68vh", rotate: -0.5, scale: 0.9,  opacity: 1, width: "150px" },
-      { x: "5vw",  y: "82vh", rotate: 1,    scale: 0.9,  opacity: 1, width: "150px" },
-      { x: "5vw",  y: "96vh", rotate: 0,    scale: 0,    opacity: 0, width: "150px" },
-    ],
-  },
-
-  // ── Stage 2: Features — feature highlight cards ────────
-  {
-    cards: [
-      {
-        tag: "01",
-        headline: "No more guessing who paid",
-        body: "Every expense is instantly visible to everyone.",
-      },
-      {
-        tag: "02",
-        headline: "The math, done for you",
-        body: "Split evenly, by percentage, or exact shares.",
-      },
-      {
-        tag: "03",
-        headline: "Settle up in seconds",
-        body: "See who paid what and mark it settled.",
-      },
-      null,
-      null,
-    ],
-    positions: [
-      { x: "4vw",  y: "10vh",  rotate: -0.8, scale: 0.88, opacity: 1, width: "200px" },
-      { x: "35vw", y: "10vh",  rotate: 0.4,  scale: 0.88, opacity: 1, width: "200px" },
-      { x: "66vw", y: "10vh",  rotate: -0.5, scale: 0.88, opacity: 1, width: "200px" },
-      { x: "20vw", y: "10vh",  rotate: 0,    scale: 0,    opacity: 0, width: "160px" },
-      { x: "52vw", y: "10vh",  rotate: 0,    scale: 0,    opacity: 0, width: "160px" },
-    ],
-  },
-
-  // ── Stage 3: HowItWorks — step cards on right ─────────
-  {
-    cards: [
-      {
-        tag: "Step 01 · Track",
-        headline: "Capture every expense",
-        body: "Snap a receipt or log it in seconds.",
-      },
-      {
-        tag: "Step 02 · Split",
-        headline: "Split it your way",
-        body: "Even, by %, or custom shares.",
-      },
-      {
-        tag: "Step 03 · Settle",
-        headline: "Close the loop",
-        body: "See balances and mark it paid.",
-      },
-      null,
-      null,
-    ],
-    positions: [
-      { x: "76vw", y: "24vh",  rotate: 0,  scale: 0.85, opacity: 1, width: "190px" },
-      { x: "76vw", y: "46vh",  rotate: 0,  scale: 0.85, opacity: 1, width: "190px" },
-      { x: "76vw", y: "68vh",  rotate: 0,  scale: 0.85, opacity: 1, width: "190px" },
-      { x: "76vw", y: "90vh",  rotate: 0,  scale: 0,    opacity: 0, width: "160px" },
-      { x: "76vw", y: "110vh", rotate: 0,  scale: 0,    opacity: 0, width: "160px" },
-    ],
-  },
-
-  // ── Stage 4: UseCases+ — all cards fade out ────────────
-  {
-    cards: [null, null, null, null, null],
-    positions: [
-      { x: "50vw", y: "50vh", rotate: 0, scale: 0, opacity: 0, width: "160px" },
-      { x: "50vw", y: "50vh", rotate: 0, scale: 0, opacity: 0, width: "160px" },
-      { x: "50vw", y: "50vh", rotate: 0, scale: 0, opacity: 0, width: "160px" },
-      { x: "50vw", y: "50vh", rotate: 0, scale: 0, opacity: 0, width: "160px" },
-      { x: "50vw", y: "50vh", rotate: 0, scale: 0, opacity: 0, width: "160px" },
-    ],
-  },
+/* ──────────────── Content banks ─────────── */
+const HERO_CONTENT: CardContent[] = [
+  { tag: "Dinner",    headline: "$112.40",   body: "Split 4 ways · paid by Alex" },
+  { tag: "Airbnb",    headline: "$640.00",   body: "Split 6 ways · 3 owe you" },
+  { tag: "Groceries", headline: "$38.75",    body: "Split 2 ways · settled" },
+  { tag: "Petrol",    headline: "$54.20",    body: "3 ways · you owe €18" },
+  { tag: "Flights",   headline: "$1,240.00", body: "Group trip · 5 people" },
 ];
 
-/* ─────────────────────── Card component ──────────────── */
-function Card({
-  content,
-  cardRef,
-}: {
-  content: CardContent;
-  cardRef: (el: HTMLDivElement | null) => void;
-}) {
-  return (
-    <div
-      ref={cardRef}
-      className="absolute pointer-events-none"
-      style={{ willChange: "transform, opacity, width" }}
-    >
-      {/* Outer shell — border always visible, background swaps */}
-      <div
-        className="rounded-2xl border border-[var(--evven-border)] backdrop-blur-md shadow-lg overflow-hidden"
-        style={{
-          background: content.accent
-            ? "var(--evven-accent-primary)"
-            : "var(--evven-card-background)",
-          width: "100%",
-          minWidth: 140,
-        }}
-      >
-        {/* Mini barcode top strip */}
-        <MiniBarcode accent={content.accent} />
+const DOWNLOAD_CONTENT: (CardContent | null)[] = [
+  { tag: "Android · v0.0.1", headline: "Evven Beta",  body: "Tap to download the APK", accent: true },
+  { tag: "Platform",          headline: "Android",     body: "Requires 8.0+" },
+  { tag: "Size",              headline: "~12 MB",      body: "Direct APK install" },
+  { tag: "iOS",               headline: "Coming soon", body: "Sign up for early access" },
+  null,
+];
 
-        <div className="px-4 pb-4 pt-1">
-          <p
-            className="text-[9px] font-semibold uppercase tracking-[0.18em] mb-1.5 leading-tight"
-            style={{
-              color: content.accent
-                ? "rgba(255,255,255,0.65)"
-                : "var(--evven-text-muted)",
-            }}
-          >
-            {content.tag}
-          </p>
-          <p
-            className="text-[15px] font-bold leading-tight mb-1"
-            style={{
-              color: content.accent ? "#ffffff" : "var(--evven-text-primary)",
-            }}
-          >
-            {content.headline}
-          </p>
-          <p
-            className="text-[11px] leading-snug"
-            style={{
-              color: content.accent
-                ? "rgba(255,255,255,0.55)"
-                : "var(--evven-text-muted)",
-            }}
-          >
-            {content.body}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
+const FEATURES_CONTENT: (CardContent | null)[] = [
+  { tag: "01", headline: "No more guessing who paid",  body: "Every expense instantly visible to everyone." },
+  { tag: "02", headline: "The math, done for you",     body: "Split evenly, by %, or by exact shares." },
+  { tag: "03", headline: "Settle up in seconds",       body: "See who paid what and mark it settled." },
+  null,
+  null,
+];
 
-/* Thin animated barcode strip at top of every card */
+const HIW_CONTENT: (CardContent | null)[] = [
+  { tag: "Step 01 · Track",  headline: "Capture every expense",  body: "Snap a receipt or log it in seconds." },
+  { tag: "Step 02 · Split",  headline: "Split it your way",      body: "Even, by %, or custom shares per expense." },
+  { tag: "Step 03 · Settle", headline: "Close the loop",         body: "See balances and mark it paid." },
+  null,
+  null,
+];
+
+/* Hero starting positions — scattered (vw/vh strings, set once) */
+const HERO_POS = [
+  { x: "3vw",  y: "19vh", r: -4,   w: "160px" },
+  { x: "77vw", y: "16vh", r: 3.5,  w: "160px" },
+  { x: "5vw",  y: "57vh", r: 2,    w: "160px" },
+  { x: "76vw", y: "55vh", r: -3,   w: "160px" },
+  { x: "43vw", y: "70vh", r: 1.5,  w: "160px" },
+];
+
+/* ──────────────── Sub-components ─────────── */
 function MiniBarcode({ seed = 0, accent }: { seed?: number; accent?: boolean }) {
-  const bars = Array.from({ length: 22 });
   return (
     <div className="flex items-end gap-[1.5px] px-4 pt-3 pb-2" aria-hidden>
-      {bars.map((_, i) => (
+      {Array.from({ length: 22 }).map((_, i) => (
         <div
           key={i}
           className="flex-shrink-0 rounded-t-sm"
           style={{
-            width: i % 5 === 0 ? "2.5px" : "1.2px",
-            height: `${5 + Math.abs(Math.sin((i + seed) * 0.72)) * 12}px`,
+            width:      i % 5 === 0 ? "2.5px" : "1.2px",
+            height:     `${5 + Math.abs(Math.sin((i + seed) * 0.72)) * 12}px`,
             background: accent ? "rgba(255,255,255,0.35)" : "var(--evven-text-primary)",
-            opacity: accent ? 1 : 0.11 + (i % 3) * 0.07,
+            opacity:    accent ? 1 : 0.11 + (i % 3) * 0.07,
           }}
         />
       ))}
@@ -240,206 +88,253 @@ function MiniBarcode({ seed = 0, accent }: { seed?: number; accent?: boolean }) 
   );
 }
 
-/* ─────────────────────── Main overlay ────────────────── */
+function CardInner({ content, seed }: { content: CardContent; seed: number }) {
+  return (
+    <div
+      className="rounded-2xl border border-[var(--evven-border)] backdrop-blur-md shadow-lg overflow-hidden"
+      style={{
+        background: content.accent
+          ? "var(--evven-accent-primary)"
+          : "color-mix(in srgb, var(--evven-card-background) 94%, transparent)",
+        width: "100%",
+      }}
+    >
+      <MiniBarcode seed={seed} accent={content.accent} />
+      <div className="px-4 pb-4 pt-0.5">
+        <p
+          className="text-[9px] font-semibold uppercase tracking-[0.18em] mb-1.5 leading-tight"
+          style={{ color: content.accent ? "rgba(255,255,255,0.6)" : "var(--evven-accent-primary)" }}
+        >
+          {content.tag}
+        </p>
+        <p
+          className="font-bold leading-tight mb-1.5"
+          style={{
+            fontSize: content.tag.startsWith("0") || content.tag.startsWith("S") ? "13px" : "15px",
+            color:    content.accent ? "#ffffff" : "var(--evven-text-primary)",
+          }}
+        >
+          {content.headline}
+        </p>
+        <p
+          className="text-[11px] leading-snug"
+          style={{ color: content.accent ? "rgba(255,255,255,0.52)" : "var(--evven-text-muted)" }}
+        >
+          {content.body}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────── Main component ─────────── */
 export function FloatingCards() {
   const shellRefs = useRef<(HTMLDivElement | null)[]>(Array(5).fill(null));
-  const contentRefs = useRef<(HTMLDivElement | null)[]>(Array(5).fill(null));
-  const currentStage = useRef(0);
-  const idleTimelines = useRef<gsap.core.Tween[]>([]);
+  const innerRefs = useRef<(HTMLDivElement | null)[]>(Array(5).fill(null));
+  const [contents, setContents]       = useState<(CardContent | null)[]>([...HERO_CONTENT]);
+  const currentStage                  = useRef(-1);
+  const idleTweens                    = useRef<gsap.core.Tween[]>([]);
 
-  // React state drives only the visible card content (cross-fade)
-  const [contents, setContents] = useState<(CardContent | null)[]>(
-    STAGES[0].cards as (CardContent | null)[]
-  );
+  /* Kill + restart idle bob */
+  const startIdleFloat = useCallback(() => {
+    idleTweens.current.forEach((t) => t.kill());
+    idleTweens.current = (shellRefs.current.filter(Boolean) as HTMLDivElement[]).map((el, i) =>
+      gsap.to(el, {
+        y:        `+=${4 + i * 1.5}`,
+        duration: 2.4 + i * 0.35,
+        repeat:   -1,
+        yoyo:     true,
+        ease:     "sine.inOut",
+        delay:    i * 0.38,
+      })
+    );
+  }, []);
 
-  /* ── Content cross-fade helper ── */
-  const swapContent = useCallback((nextStage: number) => {
-    const nextCards = STAGES[nextStage].cards;
-
-    // Fade content out on each card that's changing
-    contentRefs.current.forEach((el, i) => {
-      if (!el) return;
-      gsap.to(el, { opacity: 0, duration: 0.18, ease: "power1.in" });
-    });
-
-    gsap.delayedCall(0.22, () => {
-      setContents(nextCards as (CardContent | null)[]);
-      contentRefs.current.forEach((el) => {
-        if (!el) return;
-        gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "power2.out" });
-      });
+  /* Measure data-float-target elements inside a section */
+  const measure = useCallback((sectionId: string, count: number): (DOMRect | null)[] => {
+    const section = document.getElementById(sectionId);
+    if (!section) return Array(count).fill(null);
+    return Array.from({ length: count }, (_, i) => {
+      const el = section.querySelector<HTMLElement>(`[data-float-target="${i}"]`);
+      return el ? el.getBoundingClientRect() : null;
     });
   }, []);
 
-  /* ── Position + size morph helper ── */
-  const morphToStage = useCallback(
-    (nextStage: number, dur = 1.05) => {
-      if (nextStage === currentStage.current) return;
-      const stageIdx = Math.max(0, Math.min(nextStage, STAGES.length - 1));
-      const stage = STAGES[stageIdx];
-      currentStage.current = stageIdx;
-
-      // Trigger content swap at 50% of the movement tween
-      gsap.delayedCall(dur * 0.5, () => swapContent(stageIdx));
-
-      shellRefs.current.forEach((el, i) => {
-        if (!el) return;
-        const pos = stage.positions[i];
-        gsap.to(el, {
-          left:    pos.x,
-          top:     pos.y,
-          rotate:  pos.rotate,
-          scale:   pos.scale,
-          opacity: pos.opacity,
-          width:   pos.width,
-          duration: dur,
-          ease: "power3.inOut",
-          overwrite: "auto",
+  /* Cross-fade content at midpoint */
+  const swapContent = useCallback(
+    (next: (CardContent | null)[], delay: number) => {
+      gsap.delayedCall(delay, () => {
+        innerRefs.current.forEach((el) => {
+          if (el) gsap.to(el, { opacity: 0, duration: 0.16, ease: "power1.in" });
+        });
+      });
+      gsap.delayedCall(delay + 0.2, () => {
+        setContents(next);
+      });
+      gsap.delayedCall(delay + 0.24, () => {
+        innerRefs.current.forEach((el) => {
+          if (el) gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.28, ease: "power2.out" });
         });
       });
     },
-    [swapContent]
+    []
+  );
+
+  /* Fly cards to measured pixel rects */
+  const flyToRects = useCallback(
+    (
+      rects: (DOMRect | null)[],
+      contents: (CardContent | null)[],
+      opts: { rotate?: number }[] = [],
+      dur = 1.0
+    ) => {
+      swapContent(contents, dur * 0.45);
+
+      rects.forEach((rect, i) => {
+        const el = shellRefs.current[i];
+        if (!el) return;
+
+        if (!rect || contents[i] === null) {
+          gsap.to(el, { opacity: 0, scale: 0.75, duration: 0.45, ease: "power2.in", overwrite: "auto" });
+          return;
+        }
+
+        // Cards are `absolute` inside a `fixed` container — use viewport coords directly
+        gsap.to(el, {
+          left:     rect.left,
+          top:      rect.top,
+          width:    rect.width,
+          rotate:   opts[i]?.rotate ?? 0,
+          scale:    1,
+          opacity:  1,
+          duration: dur,
+          ease:     "power3.inOut",
+          overwrite: "auto",
+        });
+      });
+
+      gsap.delayedCall(dur + 0.1, startIdleFloat);
+    },
+    [swapContent, startIdleFloat]
+  );
+
+  /* Stage machine */
+  const morphToStage = useCallback(
+    (stage: number) => {
+      if (stage === currentStage.current) return;
+      currentStage.current = stage;
+      idleTweens.current.forEach((t) => t.kill());
+
+      if (stage === 0) {
+        // Back to hero scatter
+        HERO_POS.forEach((pos, i) => {
+          const el = shellRefs.current[i];
+          if (!el) return;
+          gsap.to(el, { left: pos.x, top: pos.y, width: pos.w, rotate: pos.r, scale: 1, opacity: 1, duration: 1.0, ease: "power3.inOut", overwrite: "auto" });
+        });
+        swapContent([...HERO_CONTENT], 0.45);
+        gsap.delayedCall(1.1, startIdleFloat);
+        return;
+      }
+
+      if (stage === 1) {
+        // Download: main card snaps to the download card, others fan out as receipt stack offset below it
+        const [mainRect] = measure("download", 1);
+        const rects: (DOMRect | null)[] = [mainRect];
+        if (mainRect) {
+          // Fan 3 receipt cards stacked behind and above the main card
+          const h = mainRect.height;
+          const makeRect = (dl: number, dt: number, dw: number): DOMRect =>
+            ({ ...mainRect, left: mainRect.left + dl, top: mainRect.top + dt, width: mainRect.width * dw, height: h, right: 0, bottom: 0, x: 0, y: 0, toJSON: () => ({}) } as DOMRect);
+          rects.push(
+            makeRect(-14, -h * 0.18, 0.76),
+            makeRect(-26, -h * 0.33, 0.66),
+            makeRect(-36, -h * 0.46, 0.58),
+          );
+        } else {
+          rects.push(null, null, null);
+        }
+        rects.push(null);
+        flyToRects(rects, DOWNLOAD_CONTENT, [{ rotate: 0 }, { rotate: -4 }, { rotate: 2.5 }, { rotate: -2 }]);
+        return;
+      }
+
+      if (stage === 2) {
+        const rects = measure("features", 3);
+        flyToRects([...rects, null, null], FEATURES_CONTENT, [{ rotate: -0.6 }, { rotate: 0.4 }, { rotate: -0.5 }]);
+        return;
+      }
+
+      if (stage === 3) {
+        const rects = measure("how-it-works", 3);
+        // Offset floating card to the right portion of each step row, same size
+        const adjusted = rects.map((r): DOMRect | null => {
+          if (!r) return null;
+          const w = Math.min(280, r.width * 0.38);
+          return { ...r, left: r.right - w - 16, width: w, right: 0, bottom: 0, x: 0, y: 0, toJSON: () => ({}) } as DOMRect;
+        });
+        flyToRects([...adjusted, null, null], HIW_CONTENT, [{ rotate: 0 }, { rotate: 0.4 }, { rotate: -0.4 }]);
+        return;
+      }
+
+      // Stage 4+: fade all out
+      shellRefs.current.forEach((el) => {
+        if (el) gsap.to(el, { opacity: 0, scale: 0.8, duration: 0.55, ease: "power2.in", overwrite: "auto" });
+      });
+    },
+    [measure, flyToRects, swapContent, startIdleFloat]
   );
 
   useEffect(() => {
     const shells = shellRefs.current.filter(Boolean) as HTMLDivElement[];
     if (shells.length < 5) return;
 
-    /* ── Set initial state from Stage 0 ── */
-    STAGES[0].positions.forEach((pos, i) => {
-      gsap.set(shells[i], {
-        left:    pos.x,
-        top:     pos.y,
-        rotate:  pos.rotate,
-        scale:   pos.scale,
-        opacity: 0,
-        width:   pos.width,
-        force3D: true,
-      });
+    // Set Stage 0 positions
+    HERO_POS.forEach((pos, i) => {
+      gsap.set(shells[i], { left: pos.x, top: pos.y, width: pos.w, rotate: pos.r, scale: 1, opacity: 0, force3D: true });
     });
 
-    /* ── Stagger entrance after hero loads ── */
-    gsap.to(shells, {
-      opacity: 1,
-      duration: 0.7,
-      ease: "power3.out",
-      stagger: 0.1,
-      delay: 1.5,
-    });
+    // Stagger entrance
+    gsap.to(shells, { opacity: 1, duration: 0.65, stagger: 0.1, ease: "power3.out", delay: 1.4, onComplete: startIdleFloat });
+    currentStage.current = 0;
 
-    /* ── Idle float per card (overwritten on morph, restored after) ── */
-    const startIdle = () => {
-      idleTimelines.current.forEach((t) => t.kill());
-      idleTimelines.current = shells.map((el) =>
-        gsap.to(el, {
-          y: `+=${5 + Math.random() * 9}`,
-          duration: 2.2 + Math.random() * 2,
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          delay: Math.random() * 2,
-        })
-      );
-    };
-    gsap.delayedCall(2.0, startIdle);
-
-    /* ── ScrollTrigger per section ── */
-    const milestones = [
-      { selector: "#download",     stage: 1 },
-      { selector: "#features",     stage: 2 },
-      { selector: "#how-it-works", stage: 3 },
-      { selector: "#use-cases",    stage: 4 },
-    ];
-
-    milestones.forEach(({ selector, stage }) => {
-      const el = document.querySelector(selector);
+    // ScrollTrigger per section
+    ([
+      { id: "download",     stage: 1, delay: 0 },
+      { id: "features",     stage: 2, delay: 0.55 },
+      { id: "how-it-works", stage: 3, delay: 0.6  },
+      { id: "use-cases",    stage: 4, delay: 0 },
+    ] as { id: string; stage: number; delay: number }[]).forEach(({ id, stage, delay }) => {
+      const el = document.getElementById(id);
       if (!el) return;
-
       ScrollTrigger.create({
-        trigger: el,
-        start: "top 58%",
-        end: "top 15%",
-        onEnter:     () => morphToStage(stage),
+        trigger:     el,
+        start:       "top 55%",
+        end:         "top 10%",
+        onEnter:     () => delay > 0 ? gsap.delayedCall(delay, () => morphToStage(stage)) : morphToStage(stage),
         onLeaveBack: () => morphToStage(stage - 1),
       });
     });
 
     return () => {
-      idleTimelines.current.forEach((t) => t.kill());
+      idleTweens.current.forEach((t) => t.kill());
       ScrollTrigger.getAll().forEach((t) => t.kill());
     };
-  }, [morphToStage]);
+  }, [morphToStage, startIdleFloat]);
 
   return (
-    <div
-      className="fixed inset-0 z-20 pointer-events-none overflow-hidden"
-      aria-hidden
-    >
-      {contents.map((content, i) => {
-        if (!content) {
-          // Invisible placeholder that GSAP still animates to keep the index stable
-          return (
-            <div
-              key={i}
-              ref={(el) => { shellRefs.current[i] = el; }}
-              className="absolute"
-              style={{ opacity: 0, willChange: "transform, opacity" }}
-            />
-          );
-        }
-
+    <div className="fixed inset-0 z-20 pointer-events-none overflow-visible" aria-hidden>
+      {Array.from({ length: 5 }).map((_, i) => {
+        const content = contents[i] ?? { tag: "", headline: "", body: "" };
         return (
           <div
             key={i}
             ref={(el) => { shellRefs.current[i] = el; }}
             className="absolute"
-            style={{ willChange: "transform, opacity, width" }}
+            style={{ willChange: "transform, opacity, width, left, top" }}
           >
-            {/* Content wrapper fades independently during content swaps */}
-            <div
-              ref={(el) => { contentRefs.current[i] = el; }}
-            >
-              <div
-                className="rounded-2xl border border-[var(--evven-border)] backdrop-blur-md shadow-lg overflow-hidden"
-                style={{
-                  background: content.accent
-                    ? "var(--evven-accent-primary)"
-                    : "color-mix(in srgb, var(--evven-card-background) 92%, transparent)",
-                }}
-              >
-                <MiniBarcode seed={i * 9} accent={content.accent} />
-                <div className="px-4 pb-4 pt-0.5">
-                  <p
-                    className="text-[9px] font-semibold uppercase tracking-[0.18em] mb-1.5 leading-tight"
-                    style={{
-                      color: content.accent
-                        ? "rgba(255,255,255,0.6)"
-                        : "var(--evven-accent-primary)",
-                    }}
-                  >
-                    {content.tag}
-                  </p>
-                  <p
-                    className="font-bold leading-tight mb-1.5"
-                    style={{
-                      fontSize: content.tag.startsWith("0") ? "13px" : "15px",
-                      color: content.accent ? "#ffffff" : "var(--evven-text-primary)",
-                    }}
-                  >
-                    {content.headline}
-                  </p>
-                  <p
-                    className="text-[11px] leading-snug"
-                    style={{
-                      color: content.accent
-                        ? "rgba(255,255,255,0.52)"
-                        : "var(--evven-text-muted)",
-                    }}
-                  >
-                    {content.body}
-                  </p>
-                </div>
-              </div>
+            <div ref={(el) => { innerRefs.current[i] = el; }}>
+              <CardInner content={content} seed={i * 9} />
             </div>
           </div>
         );

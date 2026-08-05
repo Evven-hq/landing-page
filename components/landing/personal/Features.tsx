@@ -100,6 +100,7 @@ export function Features() {
           {features.map((feature, idx) => (
             <div
               key={feature.title}
+              data-float-target={idx}
               className="
                 feature-card relative
                 py-10 pr-10

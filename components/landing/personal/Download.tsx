@@ -209,7 +209,7 @@ export function Download() {
 
             {/* Right — download card */}
             <div className="flex-shrink-0 w-full md:w-72">
-              <div className="rounded-2xl border border-[var(--evven-border)] bg-[var(--evven-card-background)] p-7 flex flex-col gap-5">
+              <div data-float-target="0" className="rounded-2xl border border-[var(--evven-border)] bg-[var(--evven-card-background)] p-7 flex flex-col gap-5">
                 <div className="flex items-center justify-between">
                   <div
                     className="w-11 h-11 rounded-xl flex items-center justify-center"

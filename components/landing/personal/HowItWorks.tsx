@@ -136,6 +136,7 @@ export function HowItWorks() {
             {steps.map((item, idx) => (
               <div
                 key={idx}
+                data-float-target={idx}
                 ref={(el) => {
                   if (el) stepRefs.current[idx] = el;
                 }}
