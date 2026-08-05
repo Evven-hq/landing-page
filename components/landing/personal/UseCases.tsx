@@ -1,5 +1,11 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
 const useCases = [
   {
     title: "Roommates",
@@ -24,29 +30,85 @@ const useCases = [
 ];
 
 export function UseCases() {
-  return (
-    <section className="section-animate px-6 py-28 sm:py-36 bg-background">
-      <div className="mx-auto max-w-5xl">
-        <p className="section-label mb-6">Use Cases</p>
+  const sectionRef = useRef<HTMLElement>(null);
+  const labelRef   = useRef<HTMLParagraphElement>(null);
+  const headRef    = useRef<HTMLHeadingElement>(null);
+  const rowRefs    = useRef<HTMLDivElement[]>([]);
 
-        {/* DeepJudge-style: large statement left, grid right on desktop */}
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        [labelRef.current, headRef.current],
+        { opacity: 0, y: 36 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.85,
+          ease: "power3.out",
+          stagger: 0.13,
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 78%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      rowRefs.current.forEach((el) => {
+        if (!el) return;
+        gsap.fromTo(
+          el,
+          { opacity: 0, x: -20 },
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.7,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: el,
+              start: "top 86%",
+              toggleActions: "play none none none",
+            },
+          }
+        );
+      });
+    });
+
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <section
+      id="use-cases"
+      ref={sectionRef}
+      className="px-6 py-28 sm:py-36 bg-background"
+    >
+      <div className="mx-auto max-w-5xl">
+        <p ref={labelRef} className="section-label mb-6" style={{ opacity: 0 }}>
+          Use Cases
+        </p>
+
         <div className="flex flex-col lg:flex-row lg:items-start lg:gap-20">
-          {/* Left: editorial heading */}
+          {/* Left sticky heading */}
           <div className="lg:w-[38%] mb-14 lg:mb-0 lg:sticky lg:top-32">
-            <h2 className="hero-main-text text-[clamp(2.6rem,5vw,4.5rem)] leading-[0.95] tracking-[-0.04em] text-[var(--evven-text-primary)]">
+            <h2
+              ref={headRef}
+              style={{ opacity: 0 }}
+              className="hero-main-text text-[clamp(2.6rem,5vw,4.5rem)] leading-[0.95] tracking-[-0.04em] text-[var(--evven-text-primary)]"
+            >
               Works for any group or occasion.
             </h2>
           </div>
 
-          {/* Right: use case list */}
+          {/* Right: use case rows */}
           <div className="flex-1 space-y-0">
             {useCases.map((uc, i) => (
               <div
                 key={uc.title}
+                ref={(el) => { if (el) rowRefs.current[i] = el; }}
+                style={{ opacity: 0 }}
                 className="
-                  py-8
-                  border-t border-[var(--evven-border)]
-                  last:border-b
+                  py-8 border-t border-[var(--evven-border)] last:border-b
                   flex flex-col sm:flex-row sm:items-start sm:gap-10
                 "
               >

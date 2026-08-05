@@ -7,55 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* ─── Floating expense card ─────────────────────────── */
-function ExpenseCard({
-  label,
-  amount,
-  sub,
-  style,
-}: {
-  label: string;
-  amount: string;
-  sub: string;
-  style?: React.CSSProperties;
-}) {
-  return (
-    <div
-      className="floating-card absolute pointer-events-none select-none"
-      style={style}
-    >
-      <div
-        className="rounded-2xl border border-[var(--evven-border)] bg-white/80 backdrop-blur-sm px-4 py-3 shadow-sm"
-        style={{ minWidth: 140 }}
-      >
-        {/* mini barcode lines */}
-        <div className="flex items-end gap-[2px] mb-2.5" aria-hidden>
-          {Array.from({ length: 18 }).map((_, i) => (
-            <div
-              key={i}
-              className="rounded-t-sm"
-              style={{
-                width: i % 4 === 0 ? "3px" : "1.5px",
-                height: `${8 + Math.abs(Math.sin(i * 0.7)) * 14}px`,
-                background: "var(--evven-text-primary)",
-                opacity: 0.15 + (i % 3) * 0.08,
-              }}
-            />
-          ))}
-        </div>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--evven-text-muted)]">
-          {label}
-        </p>
-        <p className="text-base font-bold text-[var(--evven-text-primary)] leading-tight mt-0.5">
-          {amount}
-        </p>
-        <p className="text-[10px] text-[var(--evven-text-muted)] mt-0.5">{sub}</p>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Animated barcode ──────────────────────────────── */
+/* ─── Animated barcode strip ─────────────────────────── */
 function BarcodeLines() {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -64,16 +16,20 @@ function BarcodeLines() {
     if (!el) return;
     const lines = Array.from(el.querySelectorAll<HTMLDivElement>(".bar-line"));
 
-    gsap.set(lines, { scaleY: 0, transformOrigin: "bottom" });
-    gsap.to(lines, {
-      scaleY: 1,
-      duration: 1.4,
-      ease: "power3.out",
-      stagger: { each: 0.01, from: "center" },
-      delay: 0.5,
-    });
+    // Start collapsed, grow up
+    gsap.fromTo(
+      lines,
+      { scaleY: 0, transformOrigin: "bottom" },
+      {
+        scaleY: 1,
+        duration: 1.4,
+        ease: "power3.out",
+        stagger: { each: 0.008, from: "center" },
+        delay: 0.6,
+      }
+    );
 
-    // Scroll-driven barcode height compression
+    // Scroll-driven height compression
     ScrollTrigger.create({
       trigger: el,
       start: "top 80%",
@@ -82,38 +38,42 @@ function BarcodeLines() {
         const prog = self.progress;
         lines.forEach((line, i) => {
           const natural = 0.55 + Math.abs(Math.sin(i * 0.4)) * 0.45;
-          gsap.set(line, { scaleY: natural * (1 - prog * 0.55) });
+          gsap.set(line, { scaleY: natural * (1 - prog * 0.6) });
         });
       },
     });
 
-    // idle pulse
-    lines.forEach((line, i) => {
-      gsap.to(line, {
-        scaleY: 0.5 + Math.random() * 0.5,
-        duration: 1.6 + Math.random() * 1.8,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-        delay: i * 0.025,
+    // Idle pulse after entrance
+    gsap.delayedCall(2.2, () => {
+      lines.forEach((line, i) => {
+        gsap.to(line, {
+          scaleY: 0.4 + Math.random() * 0.6,
+          duration: 1.8 + Math.random() * 2,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: i * 0.022,
+        });
       });
     });
+
+    return () => ScrollTrigger.getAll().forEach((t) => t.kill());
   }, []);
 
   const BAR_COUNT = 90;
-  const ACCENT_INDICES = new Set([11, 12, 30, 31, 55, 56, 70, 71]);
+  const ACCENT = new Set([11, 12, 30, 31, 55, 56, 70, 71]);
 
   return (
     <div
       ref={containerRef}
       className="relative w-full overflow-hidden"
-      style={{ height: "clamp(130px, 24vw, 280px)" }}
+      style={{ height: "clamp(130px, 22vw, 260px)" }}
       aria-hidden
     >
-      <div className="flex items-end justify-center gap-[2px] h-full w-full px-2">
+      <div className="flex items-end justify-center gap-[2.5px] h-full w-full px-4">
         {Array.from({ length: BAR_COUNT }).map((_, i) => {
-          const isAccent = ACCENT_INDICES.has(i);
-          const baseH = 20 + Math.abs(Math.sin(i * 0.4 + 1)) * 65 + Math.random() * 18;
+          const isAccent = ACCENT.has(i);
+          const baseH = 22 + Math.abs(Math.sin(i * 0.4 + 1)) * 62 + Math.random() * 16;
           return (
             <div
               key={i}
@@ -124,7 +84,7 @@ function BarcodeLines() {
                 background: isAccent
                   ? "var(--evven-accent-primary)"
                   : "var(--evven-text-primary)",
-                opacity: isAccent ? 0.85 : 0.14 + (i % 4) * 0.05,
+                opacity: isAccent ? 0.9 : 0.13 + (i % 4) * 0.05,
               }}
             />
           );
@@ -134,74 +94,60 @@ function BarcodeLines() {
   );
 }
 
-/* ─── Hero ──────────────────────────────────────────── */
+/* ─── Hero ───────────────────────────────────────────── */
 export function Hero() {
-  const annRef = useRef<HTMLDivElement>(null);
-  const headRef = useRef<HTMLHeadingElement>(null);
-  const subRef = useRef<HTMLParagraphElement>(null);
-  const btnsRef = useRef<HTMLDivElement>(null);
-  const barcodeRef = useRef<HTMLDivElement>(null);
-  const cardsRef = useRef<HTMLDivElement>(null);
-  const sectionRef = useRef<HTMLElement>(null);
+  const annRef    = useRef<HTMLDivElement>(null);
+  const h1Ref     = useRef<HTMLHeadingElement>(null);
+  const subRef    = useRef<HTMLParagraphElement>(null);
+  const btnsRef   = useRef<HTMLDivElement>(null);
+  const barcodeRef= useRef<HTMLDivElement>(null);
+  const sectionRef= useRef<HTMLElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // ── Initial stagger reveal ──
-      gsap.set(
-        [annRef.current, headRef.current, subRef.current, btnsRef.current, barcodeRef.current],
-        { opacity: 0, y: 30 }
+      // ── fromTo: GSAP owns both start + end, no CSS conflict ──
+      const tl = gsap.timeline({ delay: 0.05 });
+
+      tl.fromTo(
+        annRef.current,
+        { opacity: 0, y: 24 },
+        { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }
+      )
+      .fromTo(
+        h1Ref.current,
+        { opacity: 0, y: 36 },
+        { opacity: 1, y: 0, duration: 0.9, ease: "power3.out" },
+        "-=0.28"
+      )
+      .fromTo(
+        subRef.current,
+        { opacity: 0, y: 24 },
+        { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" },
+        "-=0.5"
+      )
+      .fromTo(
+        btnsRef.current,
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
+        "-=0.42"
+      )
+      .fromTo(
+        barcodeRef.current,
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" },
+        "-=0.45"
       );
 
-      const tl = gsap.timeline({ delay: 0.08 });
-      tl.to(annRef.current, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" })
-        .to(headRef.current, { opacity: 1, y: 0, duration: 0.9, ease: "power3.out" }, "-=0.3")
-        .to(subRef.current, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" }, "-=0.45")
-        .to(btnsRef.current, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, "-=0.4")
-        .to(barcodeRef.current, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, "-=0.5");
-
-      // ── Floating cards scroll parallax ──
-      const cards = cardsRef.current
-        ? Array.from(cardsRef.current.querySelectorAll<HTMLDivElement>(".floating-card"))
-        : [];
-
-      // Stagger cards in after hero loads
-      gsap.set(cards, { opacity: 0, scale: 0.88, y: 20 });
-      gsap.to(cards, {
-        opacity: 1,
-        scale: 1,
-        y: 0,
-        duration: 0.7,
-        ease: "power3.out",
-        stagger: 0.12,
-        delay: 1.2,
-      });
-
-      // Parallax drift on scroll
-      const speeds = [0.12, -0.18, 0.22, -0.14, 0.16];
-      cards.forEach((card, i) => {
-        gsap.to(card, {
-          y: () => ScrollTrigger.getById("hero-scroll")?.progress! * speeds[i] * -400,
-          ease: "none",
-          scrollTrigger: {
-            id: `card-${i}`,
-            trigger: sectionRef.current,
-            start: "top top",
-            end: "bottom top",
-            scrub: 0.8,
-          },
-        });
-      });
-
-      // ── Hero section itself fades / scales slightly on scroll ──
-      gsap.to(headRef.current, {
-        y: -60,
-        opacity: 0.3,
+      // ── Headline drifts up + fades as section leaves viewport ──
+      gsap.to(h1Ref.current, {
+        y: -70,
+        opacity: 0.15,
         ease: "none",
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top top",
-          end: "60% top",
-          scrub: 1,
+          end: "55% top",
+          scrub: 1.2,
         },
       });
     });
@@ -212,57 +158,24 @@ export function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full bg-background overflow-hidden pt-28 pb-0 md:pt-36"
+      className="relative w-full bg-background overflow-visible pt-28 pb-0 md:pt-36"
     >
-      {/* Subtle grid texture */}
+      {/* Subtle dot grid */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.025]"
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage:
-            "linear-gradient(var(--evven-text-primary) 1px, transparent 1px), linear-gradient(90deg, var(--evven-text-primary) 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
+            "radial-gradient(circle, var(--evven-text-primary) 1px, transparent 1px)",
+          backgroundSize: "36px 36px",
         }}
         aria-hidden
       />
 
-      {/* ── Floating expense cards (like DeepJudge's floating source cards) ── */}
-      <div ref={cardsRef} className="pointer-events-none absolute inset-0" aria-hidden>
-        <ExpenseCard
-          label="Dinner"
-          amount="$112.40"
-          sub="Split 4 ways · paid by Alex"
-          style={{ top: "18%", left: "4%", transform: "rotate(-4deg)" }}
-        />
-        <ExpenseCard
-          label="Airbnb"
-          amount="$640.00"
-          sub="Split 6 ways · 3 owe you"
-          style={{ top: "26%", right: "5%", transform: "rotate(3.5deg)" }}
-        />
-        <ExpenseCard
-          label="Groceries"
-          amount="$38.75"
-          sub="Split 2 ways · settled"
-          style={{ top: "55%", left: "7%", transform: "rotate(2deg)" }}
-        />
-        <ExpenseCard
-          label="Petrol"
-          amount="$54.20"
-          sub="Split 3 ways · you owe €18"
-          style={{ top: "50%", right: "4%", transform: "rotate(-3deg)" }}
-        />
-        <ExpenseCard
-          label="Flights"
-          amount="$1,240.00"
-          sub="Group trip · 5 people"
-          style={{ top: "78%", left: "50%", transform: "translateX(-50%) rotate(1.5deg)" }}
-        />
-      </div>
-
-      {/* ── Main content ── */}
+      {/* ── Main copy ── */}
       <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
+
         {/* Announcement pill */}
-        <div ref={annRef} className="flex justify-center mb-8 md:mb-10">
+        <div ref={annRef} style={{ opacity: 0 }} className="flex justify-center mb-8 md:mb-10">
           <a
             href="https://github.com/Evven-hq"
             target="_blank"
@@ -271,9 +184,9 @@ export function Hero() {
               inline-flex items-center gap-2
               px-4 py-1.5 rounded-full
               border border-[var(--evven-border)]
-              bg-white text-xs font-medium
+              bg-[var(--evven-card-background)] text-xs font-medium
               text-[var(--evven-text-muted)]
-              hover:border-[var(--evven-accent-primary)]/40
+              hover:border-[var(--evven-accent-primary)]/50
               hover:text-[var(--evven-text-primary)]
               transition-all duration-200
             "
@@ -283,17 +196,18 @@ export function Hero() {
               aria-hidden
             />
             Open source — view on GitHub
-            <span className="opacity-60" aria-hidden>→</span>
+            <span className="opacity-50" aria-hidden>→</span>
           </a>
         </div>
 
         {/* Headline */}
         <h1
-          ref={headRef}
+          ref={h1Ref}
+          style={{ opacity: 0 }}
           className="
             hero-main-text
-            text-[clamp(3.6rem,9vw,8rem)]
-            leading-[0.92]
+            text-[clamp(3.8rem,9.5vw,8.5rem)]
+            leading-[0.9]
             tracking-[-0.04em]
             text-[var(--evven-text-primary)]
             text-balance
@@ -309,16 +223,18 @@ export function Hero() {
         {/* Subheading */}
         <p
           ref={subRef}
-          className="mt-7 md:mt-9 mx-auto max-w-xl text-base md:text-lg leading-[1.7] text-[var(--evven-text-muted)]"
+          style={{ opacity: 0 }}
+          className="mt-7 md:mt-9 mx-auto max-w-xl text-base md:text-lg leading-[1.72] text-[var(--evven-text-muted)]"
         >
           Stop doing math in the group chat. Evven tracks every shared expense
           automatically, settles balances instantly, and keeps the money
           conversations out of your friendships.
         </p>
 
-        {/* Buttons */}
+        {/* CTA buttons */}
         <div
           ref={btnsRef}
+          style={{ opacity: 0 }}
           className="mt-9 md:mt-11 flex flex-col sm:flex-row items-center justify-center gap-3"
         >
           <Link
@@ -330,8 +246,7 @@ export function Hero() {
               text-sm font-semibold
               hover:bg-[var(--evven-accent-primary)]/90
               transition-all duration-200
-              hover:scale-[1.02]
-              active:scale-[0.98]
+              hover:scale-[1.02] active:scale-[0.98]
             "
           >
             Start splitting for free
@@ -342,7 +257,7 @@ export function Hero() {
               inline-flex items-center gap-1.5
               px-6 py-3 rounded-full
               border border-[var(--evven-border)]
-              bg-white
+              bg-[var(--evven-card-background)]
               text-sm font-medium text-[var(--evven-text-muted)]
               hover:text-[var(--evven-text-primary)]
               hover:border-[var(--evven-text-primary)]/30
@@ -354,8 +269,8 @@ export function Hero() {
         </div>
       </div>
 
-      {/* ── Barcode visual ── */}
-      <div ref={barcodeRef} className="relative z-10 mt-16 md:mt-20 w-full">
+      {/* ── Barcode strip ── */}
+      <div ref={barcodeRef} style={{ opacity: 0 }} className="relative z-10 mt-16 md:mt-22 w-full">
         <BarcodeLines />
       </div>
     </section>
